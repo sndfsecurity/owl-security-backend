@@ -7,4 +7,9 @@ public interface UserService {
     User saveUser(User user);
     
     User login(String email, String password);
+    
+    void resetPassword(
+            Long userId,
+            String newPassword
+    );
 }

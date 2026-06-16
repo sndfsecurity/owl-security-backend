@@ -1,8 +1,6 @@
 package com.owlsecurity.portal.entity;
 
 import jakarta.persistence.*;
-
-
 import lombok.*;
 
 @Entity

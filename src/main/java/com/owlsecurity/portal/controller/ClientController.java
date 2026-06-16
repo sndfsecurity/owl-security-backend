@@ -1,14 +1,9 @@
 package com.owlsecurity.portal.controller;
-
 import java.util.List;
-
 import org.springframework.web.bind.annotation.*;
-
 import com.owlsecurity.portal.dto.ClientRequest;
 import com.owlsecurity.portal.entity.Client;
 import com.owlsecurity.portal.service.ClientService;
-
-
 
 @RestController
 @RequestMapping("/api/clients")
@@ -89,6 +84,22 @@ public class ClientController {
     public Client updateClient(
             @PathVariable Long id,
             @RequestBody ClientRequest request
+    ) {
+
+        return clientService.updateClient(
+                id,
+                request
+        );
+    }
+    
+    
+    @PutMapping("/profile/{id}")
+    public Client updateClientProfile(
+
+            @PathVariable Long id,
+
+            @RequestBody ClientRequest request
+
     ) {
 
         return clientService.updateClient(

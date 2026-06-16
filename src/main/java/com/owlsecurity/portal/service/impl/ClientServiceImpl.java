@@ -3,7 +3,6 @@ package com.owlsecurity.portal.service.impl;
 import java.time.LocalDateTime;
 
 import java.util.List;
-
 import org.springframework.stereotype.Service;
 
 import com.owlsecurity.portal.dto.ClientRequest;
@@ -130,9 +129,8 @@ public class ClientServiceImpl implements ClientService {
     }
     
     
-     //    delete
-    
-    
+     //delete
+  
     @Override
     public void deleteClient(Long id) {
 

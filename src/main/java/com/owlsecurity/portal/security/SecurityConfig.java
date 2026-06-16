@@ -80,7 +80,15 @@ public class SecurityConfig {
                         .requestMatchers("/api/dashboard/**")
                         .hasRole("ADMIN")
                         
+                        .requestMatchers("/api/users/**")
+                        .hasRole("ADMIN")
+                        
                         .requestMatchers("/api/clients/user/**")
+                        .hasRole("CLIENT")
+                        
+                        .requestMatchers(
+                                "/api/clients/profile/**"
+                        )
                         .hasRole("CLIENT")
 
                         .requestMatchers("/api/clients/**")
