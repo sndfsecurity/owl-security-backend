@@ -39,16 +39,9 @@ public class ReportServiceImpl implements ReportService {
 
 	        
 	       
-	        LocalTime currentTime =
-	        	    LocalTime.now(
-	        	        ZoneId.of("Asia/Kolkata")
-	        	    );
-
-	        	report.setReportTime(
-	        	    currentTime.format(
-	        	        DateTimeFormatter.ofPattern(
-	        	            "hh:mm a"
-	        	        )
+	        report.setReportTime(
+	        	    LocalTime.now().format(
+	        	        DateTimeFormatter.ofPattern("hh:mm a")
 	        	    )
 	        	);
 	        
@@ -57,7 +50,7 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public List<Report> getAllReports() {
-        return reportRepository.findAll();
+        return reportRepository.findAllByOrderByCreatedAtDesc();
     }
 
     @Override
@@ -94,7 +87,8 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public List<Report> getReportsByClient(Long clientId) {
 
-        return reportRepository.findByClientId(clientId);
+        return reportRepository.findByClientIdOrderByCreatedAtDesc(
+                clientId);
     }
     
     @Override
@@ -117,6 +111,35 @@ public class ReportServiceImpl implements ReportService {
                 .findByClientIdAndReportDate(
                         clientId,
                         reportDate
+                );
+    }
+    
+    
+    @Override
+    public List<Report> getReportsByDateRange(
+            LocalDateTime start,
+            LocalDateTime end
+    ) {
+
+        return reportRepository
+                .findByCreatedAtBetween(
+                        start,
+                        end
+                );
+    }
+
+    @Override
+    public List<Report> getReportsByClientAndDateRange(
+            Long clientId,
+            LocalDateTime start,
+            LocalDateTime end
+    ) {
+
+        return reportRepository
+                .findByClientIdAndCreatedAtBetween(
+                        clientId,
+                        start,
+                        end
                 );
     }
 }

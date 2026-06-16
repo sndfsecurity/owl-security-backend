@@ -2,7 +2,6 @@ package com.owlsecurity.portal.controller;
 
 import java.util.List;
 
-
 import org.springframework.web.bind.annotation.*;
 
 import com.owlsecurity.portal.dto.ClientRequest;

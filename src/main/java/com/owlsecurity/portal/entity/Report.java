@@ -31,7 +31,11 @@ public class Report {
     @Column(length = 2000)
     private String notes;
 
-    private LocalDateTime createdAt;
+//    private LocalDateTime createdAt;
+    
+    private LocalDateTime createdAt =
+            LocalDateTime.now(
+                    java.time.ZoneId.of("Asia/Kolkata"));
     
     
     public String getImageUrl() {

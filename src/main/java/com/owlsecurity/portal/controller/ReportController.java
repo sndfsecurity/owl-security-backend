@@ -1,5 +1,7 @@
 package com.owlsecurity.portal.controller;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.*;
@@ -61,6 +63,7 @@ public class ReportController {
         return "Report Deleted Successfully";
     }
     
+    
     @GetMapping("/client/{clientId}")
     public List<Report> getClientReports(
             @PathVariable Long clientId
@@ -80,13 +83,16 @@ public class ReportController {
                 );
     }
     
-    @GetMapping(
-            "/client/{clientId}/date/{reportDate}"
-    )
-    public List<Report> getClientReportsByDate(
+    
+    
+    
+    @GetMapping("/client/{clientId}/date/{reportDate}")
+     public List<Report> getClientReportsByDate(
             @PathVariable Long clientId,
             @PathVariable String reportDate
-    ) {
+    ) 
+    
+    {
 
         return reportService
                 .getReportsByClientAndDate(
@@ -94,4 +100,43 @@ public class ReportController {
                         reportDate
                 );
     }
+    
+    
+    
+    @GetMapping("/range")
+    public List<Report> getReportsByRange(
+
+            @RequestParam String fromDate,
+            @RequestParam String toDate,
+
+            @RequestParam(required = false)
+            Long clientId
+    ) {
+
+        LocalDateTime start =
+                LocalDate.parse(fromDate)
+                        .atStartOfDay();
+
+        LocalDateTime end =
+                LocalDate.parse(toDate)
+                        .atTime(23,59,59);
+
+        if(clientId != null) {
+
+            return reportService
+                    .getReportsByClientAndDateRange(
+                            clientId,
+                            start,
+                            end
+                    );
+        }
+
+        return reportService
+                .getReportsByDateRange(
+                        start,
+                        end
+                );
+    }
+    
+    
 }
