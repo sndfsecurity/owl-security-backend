@@ -5,7 +5,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.owlsecurity.portal.entity.Report;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface ReportRepository extends JpaRepository<Report, Long> {
 	
@@ -41,6 +42,28 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
 	            Long clientId,
 	            LocalDateTime start,
 	            LocalDateTime end
+	    );
+	    
+	    Page<Report> findAllByOrderByCreatedAtDesc(
+	            Pageable pageable
+	    );
+
+	    Page<Report> findByCreatedAtBetween(
+	            LocalDateTime start,
+	            LocalDateTime end,
+	            Pageable pageable
+	    );
+
+	    Page<Report> findByClientIdAndCreatedAtBetween(
+	            Long clientId,
+	            LocalDateTime start,
+	            LocalDateTime end,
+	            Pageable pageable
+	    );
+	    
+	    Page<Report> findByClientIdOrderByCreatedAtDesc(
+	            Long clientId,
+	            Pageable pageable
 	    );
 
 }

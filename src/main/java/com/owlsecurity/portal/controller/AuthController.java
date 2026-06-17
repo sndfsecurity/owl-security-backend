@@ -59,7 +59,7 @@ public class AuthController {
 
         	return new LoginResponse(
         		    null,
-        		    "Invalid Credentials",
+        		    "Invalid Email or Password",
         		    null,
         		    null,
         		    null

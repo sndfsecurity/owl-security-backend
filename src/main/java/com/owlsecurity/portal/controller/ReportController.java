@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import com.owlsecurity.portal.dto.ReportRequest;
 import com.owlsecurity.portal.entity.Report;
 import com.owlsecurity.portal.service.ReportService;
+import org.springframework.data.domain.Page;
 
 @RestController
 @RequestMapping("/api/reports")
@@ -38,9 +39,27 @@ public class ReportController {
     }
 
     @GetMapping
-    public List<Report> getAllReports() {
-        return reportService.getAllReports();
+    public Page<Report> getAllReports(
+
+            @RequestParam(
+                    defaultValue = "0"
+            )
+            int page,
+
+            @RequestParam(
+                    defaultValue = "10"
+            )
+            int size
+
+    ) {
+
+        return reportService
+                .getAllReports(
+                        page,
+                        size
+                );
     }
+    
 
     @GetMapping("/{id}")
     public Report getReportById(@PathVariable Long id) {
@@ -65,12 +84,24 @@ public class ReportController {
     
     
     @GetMapping("/client/{clientId}")
-    public List<Report> getClientReports(
-            @PathVariable Long clientId
+    public Page<Report> getClientReports(
+            @PathVariable Long clientId,
+
+            @RequestParam(defaultValue = "0")
+            int page,
+
+            @RequestParam(defaultValue = "5")
+            int size
     ) {
 
-        return reportService.getReportsByClient(clientId);
+        return reportService.getReportsByClient(
+                clientId,
+                page,
+                size
+        );
     }
+    
+    
     
     @GetMapping("/date/{reportDate}")
     public List<Report> getReportsByDate(
@@ -104,13 +135,23 @@ public class ReportController {
     
     
     @GetMapping("/range")
-    public List<Report> getReportsByRange(
+    public Page<Report> getReportsByRange(
 
             @RequestParam String fromDate,
             @RequestParam String toDate,
 
             @RequestParam(required = false)
-            Long clientId
+            Long clientId,
+
+            @RequestParam(
+                    defaultValue = "0"
+            )
+            int page,
+
+            @RequestParam(
+                    defaultValue = "10"
+            )
+            int size
     ) {
 
         LocalDateTime start =
@@ -119,7 +160,11 @@ public class ReportController {
 
         LocalDateTime end =
                 LocalDate.parse(toDate)
-                        .atTime(23,59,59);
+                        .atTime(
+                                23,
+                                59,
+                                59
+                        );
 
         if(clientId != null) {
 
@@ -127,16 +172,19 @@ public class ReportController {
                     .getReportsByClientAndDateRange(
                             clientId,
                             start,
-                            end
+                            end,
+                            page,
+                            size
                     );
         }
 
         return reportService
                 .getReportsByDateRange(
                         start,
-                        end
+                        end,
+                        page,
+                        size
                 );
     }
-    
     
 }

@@ -2,9 +2,9 @@ package com.owlsecurity.portal.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
 import com.owlsecurity.portal.dto.ReportRequest;
 import com.owlsecurity.portal.entity.Report;
+import org.springframework.data.domain.Page;
 
 public interface ReportService {
 
@@ -39,4 +39,31 @@ public interface ReportService {
             LocalDateTime start,
             LocalDateTime end
     );
+    
+    Page<Report> getAllReports(
+            int page,
+            int size
+    );
+
+    Page<Report> getReportsByDateRange(
+            LocalDateTime start,
+            LocalDateTime end,
+            int page,
+            int size
+    );
+
+    Page<Report> getReportsByClientAndDateRange(
+            Long clientId,
+            LocalDateTime start,
+            LocalDateTime end,
+            int page,
+            int size
+    );
+    
+    Page<Report> getReportsByClient(
+            Long clientId,
+            int page,
+            int size
+    );
+    
 }

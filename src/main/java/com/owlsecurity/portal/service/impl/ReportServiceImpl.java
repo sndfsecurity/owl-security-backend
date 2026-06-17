@@ -15,6 +15,10 @@ import com.owlsecurity.portal.entity.Report;
 import com.owlsecurity.portal.repository.ReportRepository;
 import com.owlsecurity.portal.service.ReportService;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
 @Service
 public class ReportServiceImpl implements ReportService {
 
@@ -140,6 +144,85 @@ public class ReportServiceImpl implements ReportService {
                         clientId,
                         start,
                         end
+                );
+    }
+    
+    @Override
+    public Page<Report> getAllReports(
+            int page,
+            int size
+    ) {
+
+        Pageable pageable =
+                PageRequest.of(
+                        page,
+                        size
+                );
+
+        return reportRepository
+                .findAllByOrderByCreatedAtDesc(
+                        pageable
+                );
+    }
+    
+    @Override
+    public Page<Report> getReportsByDateRange(
+            LocalDateTime start,
+            LocalDateTime end,
+            int page,
+            int size
+    ) {
+
+        Pageable pageable =
+                PageRequest.of(
+                        page,
+                        size
+                );
+
+        return reportRepository
+                .findByCreatedAtBetween(
+                        start,
+                        end,
+                        pageable
+                );
+    }
+    
+    @Override
+    public Page<Report> getReportsByClientAndDateRange(
+            Long clientId,
+            LocalDateTime start,
+            LocalDateTime end,
+            int page,
+            int size
+    ) {
+
+        Pageable pageable =
+                PageRequest.of(
+                        page,
+                        size
+                );
+
+        return reportRepository
+                .findByClientIdAndCreatedAtBetween(
+                        clientId,
+                        start,
+                        end,
+                        pageable
+                );
+    }
+    
+    
+    @Override
+    public Page<Report> getReportsByClient(
+            Long clientId,
+            int page,
+            int size
+    ) {
+
+        return reportRepository
+                .findByClientIdOrderByCreatedAtDesc(
+                        clientId,
+                        PageRequest.of(page, size)
                 );
     }
 }
