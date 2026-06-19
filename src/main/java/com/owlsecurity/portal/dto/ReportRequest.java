@@ -13,6 +13,9 @@ public class ReportRequest {
     
     private String imageUrl;
     
+    private String videoPath;
+
+    private String videoUrl;
     
     
     public String getImageUrl() {
@@ -77,5 +80,21 @@ public class ReportRequest {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+    
+    public String getVideoPath() {
+        return videoPath;
+    }
+
+    public void setVideoPath(String videoPath) {
+        this.videoPath = videoPath;
+    }
+
+    public String getVideoUrl() {
+        return videoUrl;
+    }
+
+    public void setVideoUrl(String videoUrl) {
+        this.videoUrl = videoUrl;
     }
 }

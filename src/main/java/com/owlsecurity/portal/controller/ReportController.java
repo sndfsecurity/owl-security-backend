@@ -35,6 +35,10 @@ public class ReportController {
         report.setImagePath(request.getImagePath());
         report.setImageUrl(request.getImageUrl());
 
+        report.setVideoPath(request.getVideoPath());
+        report.setVideoUrl(request.getVideoUrl());
+        
+        
         return reportService.saveReport(report);
     }
 
@@ -185,6 +189,14 @@ public class ReportController {
                         page,
                         size
                 );
+    }
+    
+    @GetMapping("/recent")
+    public List<Report> getRecentReports() {
+
+        return reportService
+                .getRecentReports();
+
     }
     
 }

@@ -1,7 +1,5 @@
 package com.owlsecurity.portal.entity;
-
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -26,9 +24,11 @@ public class Report {
     
     private String imageUrl;
     
+    private String videoUrl;
     
+    private String videoPath; 
 
-    @Column(length = 2000)
+	@Column(length = 2000)
     private String notes;
 
 //    private LocalDateTime createdAt;
@@ -37,22 +37,6 @@ public class Report {
             LocalDateTime.now(
                     java.time.ZoneId.of("Asia/Kolkata"));
     
-    
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
-    
-    public String getImagePath() {
-        return imagePath;
-    }
-
-    public void setImagePath(String imagePath) {
-        this.imagePath = imagePath;
-    }
     
 
     public Report() {
@@ -117,4 +101,38 @@ public class Report {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
+    
+    
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+    
+    public String getImagePath() {
+        return imagePath;
+    }
+
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
+    }
+    
+    
+    public String getVideoUrl() {
+		return videoUrl;
+	}
+
+	public void setVideoUrl(String videoUrl) {
+		this.videoUrl = videoUrl;
+	}
+
+	public String getVideoPath() {
+		return videoPath;
+	}
+
+	public void setVideoPath(String videoPath) {
+		this.videoPath = videoPath;
+	}
 }

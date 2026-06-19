@@ -65,5 +65,7 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
 	            Long clientId,
 	            Pageable pageable
 	    );
+	    
+	    List<Report> findTop5ByOrderByCreatedAtDesc();
 
 }

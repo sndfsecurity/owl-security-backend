@@ -77,7 +77,14 @@ public class ReportServiceImpl implements ReportService {
         report.setStatus(request.getStatus());
         report.setPriority(request.getPriority());
         report.setNotes(request.getNotes());
+        
         report.setImageUrl(request.getImageUrl());
+        
+        report.setImagePath(request.getImagePath());
+
+        report.setVideoUrl(request.getVideoUrl());
+
+        report.setVideoPath(request.getVideoPath());
 
         return reportRepository.save(report);
     }
@@ -224,5 +231,13 @@ public class ReportServiceImpl implements ReportService {
                         clientId,
                         PageRequest.of(page, size)
                 );
+    }
+    
+    @Override
+    public List<Report> getRecentReports() {
+
+        return reportRepository
+                .findTop5ByOrderByCreatedAtDesc();
+
     }
 }

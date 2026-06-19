@@ -66,4 +66,6 @@ public interface ReportService {
             int size
     );
     
+    List<Report> getRecentReports();
+    
 }
