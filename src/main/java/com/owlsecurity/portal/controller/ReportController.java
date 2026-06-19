@@ -153,7 +153,7 @@ public class ReportController {
             int page,
 
             @RequestParam(
-                    defaultValue = "10"
+                    defaultValue = "8"
             )
             int size
     ) {

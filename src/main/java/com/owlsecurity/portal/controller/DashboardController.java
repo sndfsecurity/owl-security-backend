@@ -1,7 +1,7 @@
 package com.owlsecurity.portal.controller;
 
 import java.time.LocalDate;
-
+import java.time.format.DateTimeFormatter;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,10 +33,18 @@ public class DashboardController {
 
         long totalReports = reportRepository.count();
 
+       
+        String today =
+                LocalDate.now()
+                         .format(
+                             DateTimeFormatter.ofPattern("dd-MM-yyyy")
+                         );
+
         long reportsToday =
                 reportRepository.countByReportDate(
-                        LocalDate.now().toString()
+                        today
                 );
+
         
         long alerts =
                 reportRepository.countByPriority(
