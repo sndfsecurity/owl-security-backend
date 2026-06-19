@@ -1,8 +1,6 @@
 package com.owlsecurity.portal.service;
 
 import java.util.List;
-
-
 import com.owlsecurity.portal.dto.ClientRequest;
 import com.owlsecurity.portal.entity.Client;
 

@@ -97,6 +97,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/reports/client/**")
                         .hasAnyRole("ADMIN", "CLIENT")
 
+                        .requestMatchers("/api/reports/range")
+                        .hasAnyRole("ADMIN", "CLIENT")
+                        
                         .requestMatchers("/api/reports/**")
                         .hasRole("ADMIN")
                         
