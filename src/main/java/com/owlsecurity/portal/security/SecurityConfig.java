@@ -15,6 +15,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.http.HttpMethod;
+import static org.springframework.security.config.Customizer.withDefaults;
+
 
 @Configuration
 public class SecurityConfig {
@@ -37,8 +39,8 @@ public class SecurityConfig {
             HttpSecurity http
     ) throws Exception {
 
-        http
-                .cors(cors -> {})
+    	http
+        .cors(withDefaults())
 
                 .csrf(csrf -> csrf.disable())
 

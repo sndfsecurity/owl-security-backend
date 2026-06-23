@@ -43,10 +43,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 request.getRequestURI()
         );
     	
-    	 if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
-    	        filterChain.doFilter(request, response);
-    	        return;
-    	    }
+    	if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+    	    response.setStatus(HttpServletResponse.SC_OK);
+    	    return;
+    	}
 
         String authHeader =
                 request.getHeader("Authorization");

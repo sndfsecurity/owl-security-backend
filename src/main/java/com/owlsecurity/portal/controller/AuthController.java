@@ -9,15 +9,14 @@ import com.owlsecurity.portal.service.UserService;
 
 import com.owlsecurity.portal.security.JwtUtil;
 
-@RestController
-@RequestMapping("/auth")
 @CrossOrigin(
-    origins = {
-        "http://localhost:3000",
-        "https://owl-security-frontend.vercel.app"
-    },
-    allowCredentials = "true"
-)
+	    origins = {
+	        "http://localhost:3000",
+	        "https://owl-security-frontend.vercel.app"
+	    }
+	)
+	@RestController
+	@RequestMapping("/auth")
 public class AuthController {
 
     private final UserService userService;
