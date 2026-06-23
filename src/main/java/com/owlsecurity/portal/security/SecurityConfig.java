@@ -30,11 +30,12 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
-        CorsConfiguration configuration =
-                new CorsConfiguration();
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        configuration.addAllowedOrigin("http://localhost:3000");
 
         configuration.addAllowedOrigin(
-                "http://localhost:3000"
+                "https://owl-security-frontend.vercel.app"
         );
 
         configuration.addAllowedMethod("*");
