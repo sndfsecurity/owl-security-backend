@@ -1,21 +1,21 @@
 package com.owlsecurity.portal.security;
 
 import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+// import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.http.HttpMethod;
-import static org.springframework.security.config.Customizer.withDefaults;
-
 
 @Configuration
 public class SecurityConfig {
@@ -31,80 +31,81 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    
+    // CORS Configuration
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        configuration.setAllowedOriginPatterns(
+                List.of(
+                        "http://localhost:3000",
+                        "https://owl-security-frontend.vercel.app"
+                )
+        );
+
+        configuration.setAllowedMethods(
+                List.of(
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "DELETE",
+                        "OPTIONS"
+                )
+        );
+
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
+    }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(
-            HttpSecurity http
-    ) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http)
+            throws Exception {
 
-    	http
-        .cors(withDefaults())
+        http
 
-                .csrf(csrf -> csrf.disable())
+            .cors(cors ->
+                    cors.configurationSource(corsConfigurationSource())
+            )
 
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(
-                                SessionCreationPolicy.STATELESS
-                        )
-                )
+            .csrf(csrf -> csrf.disable())
 
-                .authorizeHttpRequests(auth -> auth
-                		
-                		.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+            .sessionManagement(session ->
+                    session.sessionCreationPolicy(
+                            SessionCreationPolicy.STATELESS
+                    )
+            )
 
-                		.requestMatchers(
-                			    "/auth/**",
-                			    "/api/clients/register"
-                			).permitAll()
+            .authorizeHttpRequests(auth -> auth
 
-                        .requestMatchers("/api/dashboard/**")
-                        .hasRole("ADMIN")
-                        
-                        .requestMatchers("/api/users/**")
-                        .hasRole("ADMIN")
-                        
-                        .requestMatchers("/api/clients/user/**")
-                        .hasRole("CLIENT")
-                        
-                        .requestMatchers(
-                                "/api/clients/profile/**"
-                        )
-                        .hasRole("CLIENT")
+                    .requestMatchers(
+                            HttpMethod.OPTIONS,
+                            "/**"
+                    ).permitAll()
 
-                        .requestMatchers("/api/clients/**")
-                        .hasRole("ADMIN")
+                    .requestMatchers(
+                            "/auth/**"
+                    ).permitAll()
 
-                        .requestMatchers("/api/reports/client/**")
-                        .hasAnyRole("ADMIN", "CLIENT")
+                    .anyRequest()
+                    .permitAll()
+            );
 
-                        .requestMatchers("/api/reports/range")
-                        .hasAnyRole("ADMIN", "CLIENT")
-                        
-                        .requestMatchers("/api/reports/**")
-                        .hasRole("ADMIN")
-                        
-                        .requestMatchers("/api/client/**")
-                        .hasRole("CLIENT")
-                        
-                        .requestMatchers(
-                        	    "/api/upload/**"
-                        	).permitAll()
-
-                        
-                        	.requestMatchers(
-                        	    "/uploads/**"
-                        	).permitAll()
-                        	
-                        	
-                        	.anyRequest()
-                        	.permitAll()
-                );
-
-//                .addFilterBefore(
-//                        jwtFilter,
-//                        UsernamePasswordAuthenticationFilter.class
-//                );
+        // Keep disabled while testing CORS
+        /*
+        http.addFilterBefore(
+                jwtFilter,
+                UsernamePasswordAuthenticationFilter.class
+        );
+        */
 
         return http.build();
     }
