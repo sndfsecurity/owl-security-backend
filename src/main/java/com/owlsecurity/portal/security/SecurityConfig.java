@@ -1,7 +1,6 @@
 package com.owlsecurity.portal.security;
 
 import java.util.List;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -11,7 +10,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-// import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -56,7 +54,7 @@ public class SecurityConfig {
 
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
+        configuration.setAllowCredentials(false);
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
