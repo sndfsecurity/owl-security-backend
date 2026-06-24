@@ -25,15 +25,7 @@ public class AuthController {
         this.jwtUtil = jwtUtil;
     }
 
-    @GetMapping("/version")
-    public String version() {
-        return "VERSION-24-JUNE";
-    }
-    
-    @GetMapping("/test")
-    public String test() {
-        return "Backend Working";
-    }
+   
 
     @PostMapping("/register")
     public User register(@RequestBody RegisterRequest request) {
