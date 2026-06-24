@@ -15,8 +15,8 @@ import com.owlsecurity.portal.security.JwtUtil;
 	        "https://owl-security-frontend.vercel.app"
 	    }
 	)
-	@RestController
-	@RequestMapping("/auth")
+@RestController
+@RequestMapping("/auth")
 public class AuthController {
 
     private final UserService userService;
@@ -31,6 +31,11 @@ public class AuthController {
         this.jwtUtil = jwtUtil;
     }
 
+    @GetMapping("/version")
+    public String version() {
+        return "VERSION-24-JUNE";
+    }
+    
     @GetMapping("/test")
     public String test() {
         return "Backend Working";
