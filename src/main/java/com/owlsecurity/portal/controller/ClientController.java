@@ -78,8 +78,7 @@ public class ClientController {
     }
     
     
-    //update
-    
+    //update    
     @PutMapping("/{id}")
     public Client updateClient(
             @PathVariable Long id,
@@ -109,9 +108,7 @@ public class ClientController {
     }
     
     
-   //delete
-    
-    
+   //delete    
     @DeleteMapping("/{id}")
     public String deleteClient(
             @PathVariable Long id

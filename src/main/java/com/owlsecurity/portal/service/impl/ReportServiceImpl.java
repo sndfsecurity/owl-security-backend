@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import com.owlsecurity.portal.dto.ReportRequest;
 import com.owlsecurity.portal.entity.Report;
 import com.owlsecurity.portal.repository.ReportRepository;
+import com.owlsecurity.portal.service.CloudinaryService;
 import com.owlsecurity.portal.service.ReportService;
 
 import org.springframework.data.domain.Page;
@@ -22,12 +23,18 @@ import org.springframework.data.domain.Pageable;
 @Service
 public class ReportServiceImpl implements ReportService {
 
-    private final ReportRepository reportRepository;
+	private final ReportRepository reportRepository;
+	private final CloudinaryService cloudinaryService;
 
-    public ReportServiceImpl(ReportRepository reportRepository) {
-        this.reportRepository = reportRepository;
-    }
-
+	public ReportServiceImpl(
+	        ReportRepository reportRepository,
+	        CloudinaryService cloudinaryService
+	) {
+	    this.reportRepository = reportRepository;
+	    this.cloudinaryService = cloudinaryService;
+	}
+	
+	
     @Override
     public Report saveReport(Report report) {
   
@@ -88,11 +95,47 @@ public class ReportServiceImpl implements ReportService {
 
         return reportRepository.save(report);
     }
+    
+    //delete report.....................
 
-    @Override
-    public void deleteReport(Long id) {
-        reportRepository.deleteById(id);
-    }
+    
+	    @Override
+	    public void deleteReport(Long id) {
+	
+	        Report report =
+	                reportRepository.findById(id)
+	                        .orElse(null);
+	
+	        if (report == null) {
+	            return;
+	        }
+	
+	        try {
+	
+	            if (report.getImageUrl() != null &&
+	                    !report.getImageUrl().isBlank()) {
+	
+	                cloudinaryService.deleteFile(
+	                        report.getImageUrl()
+	                );
+	            }
+	
+	            if (report.getVideoUrl() != null &&
+	                    !report.getVideoUrl().isBlank()) {
+	
+	                cloudinaryService.deleteFile(
+	                        report.getVideoUrl()
+	                );
+	            }
+	
+	        } catch (Exception e) {
+	
+	            e.printStackTrace();
+	
+	        }
+	
+	        reportRepository.delete(report);
+	    }
     
     
     @Override

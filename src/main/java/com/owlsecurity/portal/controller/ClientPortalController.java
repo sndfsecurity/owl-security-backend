@@ -21,7 +21,7 @@ public class ClientPortalController {
     private final UserRepository userRepository;
     private final ClientRepository clientRepository;
     private final ReportRepository reportRepository;
-
+    
     public ClientPortalController(
             UserRepository userRepository,
             ClientRepository clientRepository,

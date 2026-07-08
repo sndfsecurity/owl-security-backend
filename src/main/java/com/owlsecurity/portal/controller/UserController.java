@@ -1,7 +1,6 @@
 package com.owlsecurity.portal.controller;
 
 import org.springframework.web.bind.annotation.*;
-
 import com.owlsecurity.portal.dto.ResetPasswordRequest;
 import com.owlsecurity.portal.service.UserService;
 
