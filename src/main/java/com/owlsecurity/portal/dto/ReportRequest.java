@@ -1,5 +1,7 @@
 package com.owlsecurity.portal.dto;
 
+import java.util.List;
+
 public class ReportRequest {
 
     private Long clientId;
@@ -9,32 +11,21 @@ public class ReportRequest {
     private String priority;
     private String notes;
     
-    private String imagePath;
-    
-    private String imageUrl;
-    
     private String videoPath;
 
     private String videoUrl;
     
-    
-    public String getImageUrl() {
-		return imageUrl;
+    private List<String> imageUrls;
+
+    public List<String> getImageUrls() {
+		return imageUrls;
 	}
 
-	public void setImageUrl(String imageUrl) {
-		this.imageUrl = imageUrl;
+	public void setImageUrls(List<String> imageUrls) {
+		this.imageUrls = imageUrls;
 	}
 
-	public String getImagePath() {
-        return imagePath;
-    }
-
-    public void setImagePath(String imagePath) {
-        this.imagePath = imagePath;
-    }
-
-    public Long getClientId() {
+	public Long getClientId() {
         return clientId;
     }
 

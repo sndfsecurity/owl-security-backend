@@ -1,6 +1,8 @@
 package com.owlsecurity.portal.service;
 import java.io.IOException;
+
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -76,5 +78,35 @@ public class CloudinaryService {
         }
 
         return path;
+    }
+    
+    
+    public void validateImages(
+            List<MultipartFile> files)
+    {
+        if(files == null)
+        {
+            return;
+        }
+
+        if(files.size() > 3)
+        {
+            throw new RuntimeException(
+                "Maximum 3 images allowed"
+            );
+        }
+
+        for(MultipartFile file : files)
+        {
+            if(
+                file.getSize()
+                > 10 * 1024 * 1024
+            )
+            {
+                throw new RuntimeException(
+                    "Image size exceeds 10 MB"
+                );
+            }
+        }
     }
 }

@@ -32,8 +32,9 @@ public class ReportController {
         report.setPriority(request.getPriority());
         report.setNotes(request.getNotes());
         
-        report.setImagePath(request.getImagePath());
-        report.setImageUrl(request.getImageUrl());
+        report.setImageUrls(
+        	    request.getImageUrls()
+        	);
 
         report.setVideoPath(request.getVideoPath());
         report.setVideoUrl(request.getVideoUrl());

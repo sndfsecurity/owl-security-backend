@@ -85,9 +85,9 @@ public class ReportServiceImpl implements ReportService {
         report.setPriority(request.getPriority());
         report.setNotes(request.getNotes());
         
-        report.setImageUrl(request.getImageUrl());
-        
-        report.setImagePath(request.getImagePath());
+        report.setImageUrls(
+        	    request.getImageUrls()
+        	);
 
         report.setVideoUrl(request.getVideoUrl());
 
@@ -112,14 +112,20 @@ public class ReportServiceImpl implements ReportService {
 	
 	        try {
 	
-	            if (report.getImageUrl() != null &&
-	                    !report.getImageUrl().isBlank()) {
-	
-	                cloudinaryService.deleteFile(
-	                        report.getImageUrl()
-	                );
-	            }
-	
+	            
+	        	if (
+	        		    report.getImageUrls() != null
+	        		)
+	        		{
+	        		    for(String imageUrl :
+	        		        report.getImageUrls())
+	        		    {
+	        		        cloudinaryService.deleteFile(
+	        		            imageUrl
+	        		        );
+	        		    }
+	        		}
+	        	
 	            if (report.getVideoUrl() != null &&
 	                    !report.getVideoUrl().isBlank()) {
 	

@@ -1,6 +1,7 @@
 package com.owlsecurity.portal.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "reports")
@@ -20,11 +21,18 @@ public class Report {
 
     private String priority;
     
-    private String imagePath;
+   
+    @ElementCollection
+    @CollectionTable(
+        name = "report_images",
+        joinColumns = @JoinColumn(name = "report_id")
+    )
+    @Column(name = "image_url")
+    private List<String> imageUrls;
     
-    private String imageUrl;
-    
-    private String videoUrl;
+   
+
+	private String videoUrl;
     
     private String videoPath; 
 
@@ -103,22 +111,6 @@ public class Report {
     }
     
     
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
-    
-    public String getImagePath() {
-        return imagePath;
-    }
-
-    public void setImagePath(String imagePath) {
-        this.imagePath = imagePath;
-    }
-    
     
     public String getVideoUrl() {
 		return videoUrl;
@@ -134,5 +126,17 @@ public class Report {
 
 	public void setVideoPath(String videoPath) {
 		this.videoPath = videoPath;
+	}
+	
+	public List<String> getImageUrls() {
+		return imageUrls;
+	}
+
+	public void setImageUrls(List<String> imageUrls) {
+		this.imageUrls = imageUrls;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
 	}
 }
