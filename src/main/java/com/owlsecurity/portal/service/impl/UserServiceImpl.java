@@ -11,6 +11,8 @@ import com.owlsecurity.portal.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDateTime;
+
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -40,43 +42,52 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
     
-    
-    
+  
     @Override
     public User login(String email, String password) {
 
         User user = userRepository.findByEmail(email)
                 .orElse(null);
 
-        if(user == null) {
+        if (user == null) {
             return null;
         }
 
-        if(!passwordEncoder.matches(
+        if (!passwordEncoder.matches(
                 password,
                 user.getPassword()
         )) {
             return null;
         }
-        
-        if(user.getRole().equals("CLIENT")) {
+
+        if (user.getRole().equals("CLIENT")) {
 
             Client client =
                 clientRepository
                     .findByUserId(user.getId())
                     .orElse(null);
 
-            if(client != null &&
-               "INACTIVE".equals(client.getStatus())) {
+            if (client != null &&
+                "INACTIVE".equals(client.getStatus())) {
 
                 return null;
             }
         }
-        
+
+        // Store the previous login time
+        LocalDateTime previousLastLogin = user.getLastLogin();
+
+        // Update database with the current login time
+        user.setLastLogin(LocalDateTime.now());
+        userRepository.save(user);
+
+        // Return the previous login time to the controller/frontend
+        user.setLastLogin(previousLastLogin);
 
         return user;
     }
     
+  
     
     @Override
     public void resetPassword(

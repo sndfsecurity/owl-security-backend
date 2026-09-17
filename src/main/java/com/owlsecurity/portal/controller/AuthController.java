@@ -59,6 +59,8 @@ public class AuthController {
         		    "Invalid Email or Password",
         		    null,
         		    null,
+        		    null,
+        		    null,
         		    null
         		);
         }
@@ -73,7 +75,9 @@ public class AuthController {
         	    "Login Success",
         	    user.getRole(),
         	    user.getName(),
-        	    user.getId()
+        	    user.getId(),
+        	    user.getCreatedAt(),
+        	    user.getLastLogin()
         	);
     }
 }

@@ -1,7 +1,10 @@
 package com.owlsecurity.portal.entity;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
 import lombok.*;
+import jakarta.persistence.PrePersist;
 
 @Entity
 @Table(name = "users")
@@ -17,9 +20,19 @@ public class User {
     private Long id;
 
     private String name;
-
+    
     @Column(unique = true)
     private String email;
+    
+    private String password;
+
+    private String role;
+    
+    @Column(nullable = true)
+    private LocalDateTime createdAt;
+
+    @Column(nullable = true)
+    private LocalDateTime lastLogin;
 
     public Long getId() {
 		return id;
@@ -60,8 +73,30 @@ public class User {
 	public void setRole(String role) {
 		this.role = role;
 	}
+	
+	
+	public LocalDateTime getCreatedAt() {
+	    return createdAt;
+	}
 
-	private String password;
+	public void setCreatedAt(LocalDateTime createdAt) {
+	    this.createdAt = createdAt;
+	}
 
-    private String role;
+	public LocalDateTime getLastLogin() {
+	    return lastLogin;
+	}
+
+	public void setLastLogin(LocalDateTime lastLogin) {
+	    this.lastLogin = lastLogin;
+	}
+	
+	@PrePersist
+	protected void onCreate() {
+	    if (createdAt == null) {
+	        createdAt = LocalDateTime.now();
+	    }
+	}
+
+	
 }
