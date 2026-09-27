@@ -13,6 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 
+import java.time.ZoneId;
+
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -78,7 +80,11 @@ public class UserServiceImpl implements UserService {
         LocalDateTime previousLastLogin = user.getLastLogin();
 
         // Update database with the current login time
-        user.setLastLogin(LocalDateTime.now());
+        
+        user.setLastLogin(
+        	    LocalDateTime.now(ZoneId.of("Asia/Kolkata"))
+        	);
+        
         userRepository.save(user);
 
         // Return the previous login time to the controller/frontend
