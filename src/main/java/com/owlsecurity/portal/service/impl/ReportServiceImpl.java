@@ -35,29 +35,34 @@ public class ReportServiceImpl implements ReportService {
 	}
 	
 	
-    @Override
-    public Report saveReport(Report report) {
-  
-        report.setCreatedAt(
-        	    LocalDateTime.now()
-        	);
+	@Override
+	public Report saveReport(Report report) {
+	    ZonedDateTime indiaNow = ZonedDateTime.now(
+	        ZoneId.of("Asia/Kolkata")
+	    );
 
-	        report.setReportDate(
-	        	    LocalDate.now().format(
-	        	        DateTimeFormatter.ofPattern("dd-MM-yyyy")
-	        	    )
-	        	);
+	    report.setCreatedAt(indiaNow.toLocalDateTime());
 
-	        
-	       
-	        report.setReportTime(
-	        	    LocalTime.now().format(
-	        	        DateTimeFormatter.ofPattern("hh:mm a")
-	        	    )
-	        	);
-	        
-        return reportRepository.save(report);
-    }
+	    report.setReportDate(
+	        indiaNow.format(
+	            DateTimeFormatter.ofPattern(
+	                "dd-MM-yyyy",
+	                java.util.Locale.ENGLISH
+	            )
+	        )
+	    );
+
+	    report.setReportTime(
+	        indiaNow.format(
+	            DateTimeFormatter.ofPattern(
+	                "hh:mm a",
+	                java.util.Locale.ENGLISH
+	            )
+	        )
+	    );
+
+	    return reportRepository.save(report);
+	}
 
     @Override
     public List<Report> getAllReports() {
