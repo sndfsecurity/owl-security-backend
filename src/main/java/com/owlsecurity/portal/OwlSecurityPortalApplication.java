@@ -1,4 +1,3 @@
-```java
 package com.owlsecurity.portal;
 
 import org.springframework.boot.CommandLineRunner;
@@ -30,9 +29,9 @@ public class OwlSecurityPortalApplication {
 
             if (userRepository.findByEmail(email).isEmpty()) {
                 User user = new User();
-                user.setName("OWL_ADMIN");
+                user.setName("OWL_Admin");
                 user.setEmail(email);
-                user.setPassword("admin@7776");
+                user.setPassword("Admin7776");
                 user.setRole("ADMIN");
 
                 userService.saveUser(user);
@@ -44,4 +43,4 @@ public class OwlSecurityPortalApplication {
         };
     }
 }
-```
+
