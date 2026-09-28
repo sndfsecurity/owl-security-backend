@@ -36,7 +36,8 @@ public class Report {
     
     private String videoPath; 
 
-	@Column(length = 2000)
+    @Lob
+    @Column(columnDefinition = "LONGTEXT")
     private String notes;
 
 //    private LocalDateTime createdAt;
