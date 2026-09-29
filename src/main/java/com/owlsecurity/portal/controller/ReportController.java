@@ -10,6 +10,11 @@ import com.owlsecurity.portal.entity.Report;
 import com.owlsecurity.portal.service.ReportService;
 import org.springframework.data.domain.Page;
 
+import org.springframework.http.MediaType;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.RequestPart;
+
+
 @RestController
 @RequestMapping("/api/reports")
 public class ReportController {
@@ -41,6 +46,25 @@ public class ReportController {
         
         
         return reportService.saveReport(report);
+    }
+    
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Report createReportWithPdf(
+            @RequestPart("request") ReportRequest request,
+            @RequestPart(value = "pdf", required = false) MultipartFile pdf) {
+
+        Report report = new Report();
+        report.setClientId(request.getClientId());
+        report.setReportDate(request.getReportDate());
+        report.setReportTime(request.getReportTime());
+        report.setStatus(request.getStatus());
+        report.setPriority(request.getPriority());
+        report.setNotes(request.getNotes());
+        report.setImageUrls(request.getImageUrls());
+        report.setVideoPath(request.getVideoPath());
+        report.setVideoUrl(request.getVideoUrl());
+
+        return reportService.saveReport(report, pdf);
     }
 
     @GetMapping

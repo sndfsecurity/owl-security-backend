@@ -30,6 +30,37 @@ public class CloudinaryService {
         return uploadResult.get("secure_url").toString();
     }
     
+    
+    public String uploadPdf(MultipartFile file) throws IOException {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("PDF file is required");
+        }
+
+        String filename = file.getOriginalFilename();
+
+        if (filename == null
+                || !filename.toLowerCase().endsWith(".pdf")
+                || !"application/pdf".equalsIgnoreCase(file.getContentType())) {
+            throw new IllegalArgumentException("Only PDF files are allowed");
+        }
+
+        if (file.getSize() > 10 * 1024 * 1024) {
+            throw new IllegalArgumentException("PDF size must not exceed 10 MB");
+        }
+
+        String publicId = java.util.UUID.randomUUID() + ".pdf";
+
+        Map<?, ?> uploadResult = cloudinary.uploader().upload(
+                file.getBytes(),
+                ObjectUtils.asMap(
+                        "resource_type", "raw",
+                        "folder", "owl-reports",
+                        "public_id", publicId
+                )
+        );
+
+        return uploadResult.get("secure_url").toString();
+    }
    
     //delete file....................
     

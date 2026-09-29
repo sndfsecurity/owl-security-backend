@@ -6,9 +6,13 @@ import com.owlsecurity.portal.dto.ReportRequest;
 import com.owlsecurity.portal.entity.Report;
 import org.springframework.data.domain.Page;
 
+import org.springframework.web.multipart.MultipartFile;
+
 public interface ReportService {
 
     Report saveReport(Report report);
+    
+    Report saveReport(Report report, MultipartFile pdf);
 
     List<Report> getAllReports();
 

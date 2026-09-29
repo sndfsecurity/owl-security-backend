@@ -9,6 +9,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.owlsecurity.portal.dto.ReportRequest;
 import com.owlsecurity.portal.entity.Report;
@@ -19,6 +20,8 @@ import com.owlsecurity.portal.service.ReportService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+
+import java.io.IOException;
 
 @Service
 public class ReportServiceImpl implements ReportService {
@@ -62,6 +65,20 @@ public class ReportServiceImpl implements ReportService {
 	    );
 
 	    return reportRepository.save(report);
+	}
+	
+	@Override
+	public Report saveReport(Report report, MultipartFile pdf) {
+	    if (pdf != null && !pdf.isEmpty()) {
+	        try {
+	            String pdfUrl = cloudinaryService.uploadPdf(pdf);
+	            report.setPdfUrl(pdfUrl);
+	        } catch (IOException e) {
+	            throw new RuntimeException("Failed to upload PDF", e);
+	        }
+	    }
+
+	    return saveReport(report);
 	}
 
     @Override
@@ -136,6 +153,13 @@ public class ReportServiceImpl implements ReportService {
 	
 	                cloudinaryService.deleteFile(
 	                        report.getVideoUrl()
+	                );
+	            }
+	            
+	            if (report.getPdfUrl() != null &&
+	                    !report.getPdfUrl().isBlank()) {
+	                cloudinaryService.deleteFile(
+	                        report.getPdfUrl()
 	                );
 	            }
 	

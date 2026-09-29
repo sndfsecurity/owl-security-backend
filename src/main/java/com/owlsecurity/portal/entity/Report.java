@@ -35,6 +35,8 @@ public class Report {
 	private String videoUrl;
     
     private String videoPath; 
+    
+    private String pdfUrl;
 
     @Lob
     @Column(columnDefinition = "LONGTEXT")
@@ -139,5 +141,13 @@ public class Report {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+	
+	public String getPdfUrl() {
+	    return pdfUrl;
+	}
+
+	public void setPdfUrl(String pdfUrl) {
+	    this.pdfUrl = pdfUrl;
 	}
 }
