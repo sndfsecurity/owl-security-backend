@@ -32,10 +32,10 @@ public class UploadController {
             );
         }
 
-        if (files.length > 3) {
+        if (files.length > 5) {
 
             throw new RuntimeException(
-                    "Maximum 3 images allowed"
+                    "Maximum 5 images allowed"
             );
         }
 

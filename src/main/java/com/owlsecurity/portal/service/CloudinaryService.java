@@ -87,25 +87,27 @@ public class CloudinaryService {
                                 "resource_type", resourceType
                         )
                 );
+        
+        System.out.println("Cloudinary delete result: " + result);
+        System.out.println("Resource type: " + resourceType);
+        System.out.println("Public ID: " + publicId);
 
     }
     
+    
     private String extractPublicId(String fileUrl) {
-
         String[] parts = fileUrl.split("/upload/");
-
-        if (parts.length < 2) {
-            return "";
-        }
+        if (parts.length < 2) return "";
 
         String path = parts[1];
-
         path = path.replaceFirst("^v\\d+/", "");
 
-        int lastDot = path.lastIndexOf('.');
-
-        if (lastDot != -1) {
-            path = path.substring(0, lastDot);
+        // Keep the file extension for raw files like PDFs
+        if (!fileUrl.contains("/raw/upload/")) {
+            int lastDot = path.lastIndexOf('.');
+            if (lastDot != -1) {
+                path = path.substring(0, lastDot);
+            }
         }
 
         return path;
@@ -120,10 +122,10 @@ public class CloudinaryService {
             return;
         }
 
-        if(files.size() > 3)
+        if(files.size() > 5)
         {
             throw new RuntimeException(
-                "Maximum 3 images allowed"
+                "Maximum 5 images allowed"
             );
         }
 
