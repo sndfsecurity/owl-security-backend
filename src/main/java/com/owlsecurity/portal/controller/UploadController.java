@@ -77,38 +77,32 @@ public class UploadController {
     }
 
     // Upload Single Video
-
     @PostMapping("/video")
     public String uploadVideo(
-            @RequestParam("file") MultipartFile file
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "removeAudio", defaultValue = "false")
+            boolean removeAudio
     ) throws IOException {
 
         if (file == null || file.isEmpty()) {
-
-            throw new RuntimeException(
-                    "Please select a video"
-            );
+            throw new RuntimeException("Please select a video");
         }
 
-        String contentType =
-                file.getContentType();
+        String contentType = file.getContentType();
 
-        if (contentType == null ||
-                !contentType.startsWith("video/")) {
-
-            throw new RuntimeException(
-                    "Only video files are allowed"
-            );
+        if (contentType == null || !contentType.startsWith("video/")) {
+            throw new RuntimeException("Only video files are allowed");
         }
 
-        if (file.getSize() >
-                50 * 1024 * 1024) {
+        if (file.getSize() > 50 * 1024 * 1024) {
+            throw new RuntimeException("Video size must be under 50MB");
+        }
 
-            throw new RuntimeException(
-                    "Video size must be under 50MB"
-            );
+        if (removeAudio) {
+            return cloudinaryService.uploadVideoWithoutAudio(file);
         }
 
         return cloudinaryService.uploadFile(file);
     }
+    
 }

@@ -30,6 +30,17 @@ public class CloudinaryService {
         return uploadResult.get("secure_url").toString();
     }
     
+    public String uploadVideoWithoutAudio(MultipartFile file)
+            throws IOException {
+
+        String videoUrl = uploadFile(file);
+
+        return videoUrl.replace(
+                "/video/upload/",
+                "/video/upload/ac_none/"
+        );
+    }
+    
     
     public String uploadPdf(MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) {
