@@ -105,4 +105,46 @@ public class UploadController {
         return cloudinaryService.uploadFile(file);
     }
     
+    
+ // Upload Multiple Videos (Max 5)
+    @PostMapping("/videos")
+    public List<String> uploadVideos(
+            @RequestParam("files") MultipartFile[] files,
+            @RequestParam(value = "removeAudio", defaultValue = "false") boolean removeAudio
+    ) throws IOException {
+
+        if (files == null || files.length == 0) {
+            throw new RuntimeException("Please select at least one video");
+        }
+
+        if (files.length > 5) {
+            throw new RuntimeException("Maximum 5 videos allowed");
+        }
+
+        List<String> videoUrls = new ArrayList<>();
+
+        for (MultipartFile file : files) {
+            if (file == null || file.isEmpty()) {
+                throw new RuntimeException("Please select valid video files");
+            }
+
+            String contentType = file.getContentType();
+            if (contentType == null || !contentType.startsWith("video/")) {
+                throw new RuntimeException("Only video files are allowed");
+            }
+
+            if (file.getSize() > 50 * 1024 * 1024) {
+                throw new RuntimeException("Each video must be under 50MB");
+            }
+
+            String videoUrl = removeAudio
+                    ? cloudinaryService.uploadVideoWithoutAudio(file)
+                    : cloudinaryService.uploadFile(file);
+
+            videoUrls.add(videoUrl);
+        }
+
+        return videoUrls;
+    }
+    
 }

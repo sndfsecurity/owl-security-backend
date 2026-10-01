@@ -93,7 +93,6 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public Report updateReport(Long id, ReportRequest request) {
-
         Report report = reportRepository.findById(id).orElse(null);
 
         if (report == null) {
@@ -106,14 +105,17 @@ public class ReportServiceImpl implements ReportService {
         report.setStatus(request.getStatus());
         report.setPriority(request.getPriority());
         report.setNotes(request.getNotes());
-        
-        report.setImageUrls(
-        	    request.getImageUrls()
-        	);
+        report.setImageUrls(request.getImageUrls());
 
         report.setVideoUrl(request.getVideoUrl());
-
         report.setVideoPath(request.getVideoPath());
+
+        if (request.getVideoUrls() != null) {
+            report.setVideoUrls(request.getVideoUrls());
+        } else if (request.getVideoUrl() != null
+                && !request.getVideoUrl().isBlank()) {
+            report.setVideoUrls(List.of(request.getVideoUrl()));
+        }
 
         return reportRepository.save(report);
     }
@@ -121,57 +123,49 @@ public class ReportServiceImpl implements ReportService {
     //delete report.....................
 
     
-	    @Override
-	    public void deleteReport(Long id) {
-	
-	        Report report =
-	                reportRepository.findById(id)
-	                        .orElse(null);
-	
-	        if (report == null) {
-	            return;
-	        }
-	
-	        try {
-	
-	            
-	        	if (
-	        		    report.getImageUrls() != null
-	        		)
-	        		{
-	        		    for(String imageUrl :
-	        		        report.getImageUrls())
-	        		    {
-	        		        cloudinaryService.deleteFile(
-	        		            imageUrl
-	        		        );
-	        		    }
-	        		}
-	        	
-	            if (report.getVideoUrl() != null &&
-	                    !report.getVideoUrl().isBlank()) {
-	
-	                cloudinaryService.deleteFile(
-	                        report.getVideoUrl()
-	                );
-	            }
-	            
-	            if (report.getPdfUrl() != null &&
-	                    !report.getPdfUrl().isBlank()) {
-	                cloudinaryService.deleteFile(
-	                        report.getPdfUrl()
-	                );
-	            }
-	
-	        } catch (Exception e) {
-	
-	            e.printStackTrace();
-	
-	        }
-	
-	        reportRepository.delete(report);
-	    }
-    
+	  
+    @Override
+    public void deleteReport(Long id) {
+        Report report = reportRepository.findById(id).orElse(null);
+
+        if (report == null) {
+            return;
+        }
+
+        try {
+            if (report.getImageUrls() != null) {
+                for (String imageUrl : report.getImageUrls()) {
+                    cloudinaryService.deleteFile(imageUrl);
+                }
+            }
+
+            if (report.getVideoUrls() != null) {
+                for (String videoUrl : report.getVideoUrls()) {
+                    if (videoUrl != null && !videoUrl.isBlank()) {
+                        cloudinaryService.deleteFile(videoUrl);
+                    }
+                }
+            }
+
+            // Delete legacy video URL if it is not already in videoUrls
+            if (report.getVideoUrl() != null
+                    && !report.getVideoUrl().isBlank()
+                    && (report.getVideoUrls() == null
+                        || !report.getVideoUrls().contains(report.getVideoUrl()))) {
+                cloudinaryService.deleteFile(report.getVideoUrl());
+            }
+
+            if (report.getPdfUrl() != null
+                    && !report.getPdfUrl().isBlank()) {
+                cloudinaryService.deleteFile(report.getPdfUrl());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        reportRepository.delete(report);
+    }
     
     @Override
     public List<Report> getReportsByClient(Long clientId) {

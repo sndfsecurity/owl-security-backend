@@ -20,6 +20,7 @@ public class Report {
     private String status;
 
     private String priority;
+   
     
    
     @ElementCollection
@@ -30,6 +31,14 @@ public class Report {
     @Column(name = "image_url")
     private List<String> imageUrls;
     
+    @ElementCollection
+    @CollectionTable(
+        name = "report_videos",
+        joinColumns = @JoinColumn(name = "report_id")
+    )
+    @Column(name = "video_url")
+    private List<String> videoUrls;
+    
    
 
 	private String videoUrl;
@@ -37,6 +46,7 @@ public class Report {
     private String videoPath; 
     
     private String pdfUrl;
+    
 
     @Lob
     @Column(columnDefinition = "LONGTEXT")
@@ -149,5 +159,13 @@ public class Report {
 
 	public void setPdfUrl(String pdfUrl) {
 	    this.pdfUrl = pdfUrl;
+	}
+	
+	public List<String> getVideoUrls() {
+	    return videoUrls;
+	}
+
+	public void setVideoUrls(List<String> videoUrls) {
+	    this.videoUrls = videoUrls;
 	}
 }

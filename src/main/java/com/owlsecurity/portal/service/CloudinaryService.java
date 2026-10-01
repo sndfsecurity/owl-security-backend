@@ -108,10 +108,15 @@ public class CloudinaryService {
     
     private String extractPublicId(String fileUrl) {
         String[] parts = fileUrl.split("/upload/");
-        if (parts.length < 2) return "";
+
+        if (parts.length < 2) {
+            return "";
+        }
 
         String path = parts[1];
-        path = path.replaceFirst("^v\\d+/", "");
+
+        // Remove transformations and version from the URL
+        path = path.replaceFirst("^(?:[^/]+/)*v\\d+/", "");
 
         // Keep the file extension for raw files like PDFs
         if (!fileUrl.contains("/raw/upload/")) {
@@ -123,7 +128,6 @@ public class CloudinaryService {
 
         return path;
     }
-    
     
     public void validateImages(
             List<MultipartFile> files)

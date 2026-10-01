@@ -2,6 +2,7 @@ package com.owlsecurity.portal.controller;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.*;
@@ -44,6 +45,13 @@ public class ReportController {
         report.setVideoPath(request.getVideoPath());
         report.setVideoUrl(request.getVideoUrl());
         
+        report.setVideoUrls(
+        	    request.getVideoUrls() != null && !request.getVideoUrls().isEmpty()
+        	        ? request.getVideoUrls()
+        	        : (request.getVideoUrl() != null && !request.getVideoUrl().isBlank()
+        	            ? List.of(request.getVideoUrl())
+        	            : new ArrayList<>())
+        	);
         
         return reportService.saveReport(report);
     }
@@ -61,8 +69,17 @@ public class ReportController {
         report.setPriority(request.getPriority());
         report.setNotes(request.getNotes());
         report.setImageUrls(request.getImageUrls());
+        
         report.setVideoPath(request.getVideoPath());
         report.setVideoUrl(request.getVideoUrl());
+        
+        report.setVideoUrls(
+        	    request.getVideoUrls() != null && !request.getVideoUrls().isEmpty()
+        	        ? request.getVideoUrls()
+        	        : (request.getVideoUrl() != null && !request.getVideoUrl().isBlank()
+        	            ? List.of(request.getVideoUrl())
+        	            : new ArrayList<>())
+        	);
 
         return reportService.saveReport(report, pdf);
     }

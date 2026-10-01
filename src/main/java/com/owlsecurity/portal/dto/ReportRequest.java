@@ -16,7 +16,10 @@ public class ReportRequest {
     private String videoUrl;
     
     private List<String> imageUrls;
-
+    
+    private List<String> videoUrls;
+    
+    
     public List<String> getImageUrls() {
 		return imageUrls;
 	}
@@ -87,5 +90,13 @@ public class ReportRequest {
 
     public void setVideoUrl(String videoUrl) {
         this.videoUrl = videoUrl;
+    }
+    
+    public List<String> getVideoUrls() {
+        return videoUrls;
+    }
+
+    public void setVideoUrls(List<String> videoUrls) {
+        this.videoUrls = videoUrls;
     }
 }
