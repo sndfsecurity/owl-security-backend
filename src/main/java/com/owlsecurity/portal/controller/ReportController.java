@@ -83,6 +83,92 @@ public class ReportController {
 
         return reportService.saveReport(report, pdf);
     }
+    
+    // new draft methods ...........................
+    
+    // =========================
+    // DRAFT REPORT APIs
+    // =========================
+
+    @PostMapping(
+            value = "/draft",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public Report saveDraft(
+            @RequestPart("request") ReportRequest request,
+            @RequestPart(value = "pdf", required = false) MultipartFile pdf) {
+
+        Report report = new Report();
+
+        report.setClientId(request.getClientId());
+        report.setReportDate(request.getReportDate());
+        report.setReportTime(request.getReportTime());
+        report.setStatus(request.getStatus());
+        report.setPriority(request.getPriority());
+        report.setNotes(request.getNotes());
+
+        report.setImageUrls(request.getImageUrls());
+
+        report.setVideoPath(request.getVideoPath());
+        report.setVideoUrl(request.getVideoUrl());
+
+        report.setVideoUrls(
+                request.getVideoUrls() != null
+                        && !request.getVideoUrls().isEmpty()
+                        ? request.getVideoUrls()
+                        : (request.getVideoUrl() != null
+                            && !request.getVideoUrl().isBlank()
+                            ? List.of(request.getVideoUrl())
+                            : new ArrayList<>())
+        );
+
+        report.setReportLifecycle("DRAFT");
+        report.setDraftData(request.getDraftData());
+
+        return reportService.saveDraft(report, pdf);
+    }
+
+    @GetMapping("/client/{clientId}/drafts")
+    public List<Report> getDraftsByClient(
+            @PathVariable Long clientId) {
+
+        return reportService.getDraftsByClient(clientId);
+    }
+
+    @PutMapping("/draft/{id}")
+    public Report updateDraft(
+            @PathVariable Long id,
+            @RequestBody ReportRequest request) {
+
+        return reportService.updateDraft(id, request);
+    }
+    
+    @PutMapping(
+            value = "/draft/{id}/save",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public Report updateDraftWithPdf(
+            @PathVariable Long id,
+            @RequestPart("request") ReportRequest request,
+            @RequestPart(value = "pdf", required = false) MultipartFile pdf) {
+
+        return reportService.updateDraft(id, request, pdf);
+    }
+
+    @PutMapping(
+            value = "/draft/{id}/submit",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public Report submitDraft(
+            @PathVariable Long id,
+            @RequestPart("request") ReportRequest request,
+            @RequestPart(value = "pdf", required = false) MultipartFile pdf) {
+
+        return reportService.submitDraft(id, request, pdf);
+    }
+    
+    
+    //......................................................................................................
 
     @GetMapping
     public Page<Report> getAllReports(
@@ -104,6 +190,17 @@ public class ReportController {
                         page,
                         size
                 );
+    }
+    
+    @GetMapping("/submitted")
+    public Page<Report> getSubmittedReports(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        return reportService.getSubmittedReports(
+                page,
+                size
+        );
     }
     
 
@@ -141,6 +238,19 @@ public class ReportController {
     ) {
 
         return reportService.getReportsByClient(
+                clientId,
+                page,
+                size
+        );
+    }
+    
+    @GetMapping("/client/{clientId}/submitted")
+    public Page<Report> getSubmittedClientReports(
+            @PathVariable Long clientId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+
+        return reportService.getSubmittedReportsByClient(
                 clientId,
                 page,
                 size

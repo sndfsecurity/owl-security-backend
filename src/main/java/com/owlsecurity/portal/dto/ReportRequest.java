@@ -19,6 +19,9 @@ public class ReportRequest {
     
     private List<String> videoUrls;
     
+    private String reportLifecycle;
+    private String draftData;
+    
     
     public List<String> getImageUrls() {
 		return imageUrls;
@@ -98,5 +101,21 @@ public class ReportRequest {
 
     public void setVideoUrls(List<String> videoUrls) {
         this.videoUrls = videoUrls;
+    }
+    
+    public String getReportLifecycle() {
+        return reportLifecycle;
+    }
+
+    public void setReportLifecycle(String reportLifecycle) {
+        this.reportLifecycle = reportLifecycle;
+    }
+
+    public String getDraftData() {
+        return draftData;
+    }
+
+    public void setDraftData(String draftData) {
+        this.draftData = draftData;
     }
 }

@@ -47,6 +47,15 @@ public class Report {
     
     private String pdfUrl;
     
+    private String reportLifecycle = "SUBMITTED";
+
+    @Lob
+    @Column(columnDefinition = "LONGTEXT")
+    private String draftData;
+
+    private LocalDateTime updatedAt =
+            LocalDateTime.now(java.time.ZoneId.of("Asia/Kolkata"));
+    
 
     @Lob
     @Column(columnDefinition = "LONGTEXT")
@@ -167,5 +176,29 @@ public class Report {
 
 	public void setVideoUrls(List<String> videoUrls) {
 	    this.videoUrls = videoUrls;
+	}
+	
+	public String getReportLifecycle() {
+	    return reportLifecycle;
+	}
+
+	public void setReportLifecycle(String reportLifecycle) {
+	    this.reportLifecycle = reportLifecycle;
+	}
+
+	public String getDraftData() {
+	    return draftData;
+	}
+
+	public void setDraftData(String draftData) {
+	    this.draftData = draftData;
+	}
+
+	public LocalDateTime getUpdatedAt() {
+	    return updatedAt;
+	}
+
+	public void setUpdatedAt(LocalDateTime updatedAt) {
+	    this.updatedAt = updatedAt;
 	}
 }

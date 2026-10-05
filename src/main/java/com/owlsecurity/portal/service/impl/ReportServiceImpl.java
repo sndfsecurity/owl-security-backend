@@ -7,6 +7,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -80,7 +81,318 @@ public class ReportServiceImpl implements ReportService {
 
 	    return saveReport(report);
 	}
+	
+	// new methods for the draft
+	
+	@Override
+	public Report saveDraft(Report report) {
+	    ZonedDateTime indiaNow =
+	            ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
 
+	    /*
+	     * For a new draft, createdAt should represent
+	     * when the draft was first created.
+	     */
+	    if (report.getCreatedAt() == null) {
+	        report.setCreatedAt(indiaNow.toLocalDateTime());
+	    }
+
+	    /*
+	     * Do NOT overwrite reportDate/reportTime here.
+	     * They belong to the draft data coming from the frontend.
+	     */
+	    report.setUpdatedAt(indiaNow.toLocalDateTime());
+	    report.setReportLifecycle("DRAFT");
+
+	    return reportRepository.save(report);
+	}
+
+	@Override
+	public Report saveDraft(Report report, MultipartFile pdf) {
+
+	    if (pdf != null && !pdf.isEmpty()) {
+	        try {
+	            String pdfUrl = cloudinaryService.uploadPdf(pdf);
+	            report.setPdfUrl(pdfUrl);
+	        } catch (IOException e) {
+	            throw new RuntimeException("Failed to upload draft PDF", e);
+	        }
+	    }
+
+	    return saveDraft(report);
+	}
+
+	@Override
+	public List<Report> getDraftsByClient(Long clientId) {
+	    return reportRepository
+	            .findByClientIdAndReportLifecycleOrderByUpdatedAtDesc(
+	                    clientId,
+	                    "DRAFT"
+	            );
+	}
+
+	@Override
+	public Report updateDraft(Long id, ReportRequest request) {
+
+	    Report report = reportRepository.findById(id).orElse(null);
+
+	    if (report == null) {
+	        return null;
+	    }
+
+	    /*
+	     * Only update an existing draft through this method.
+	     */
+	    if (!"DRAFT".equals(report.getReportLifecycle())) {
+	        return report;
+	    }
+
+	    report.setClientId(request.getClientId());
+	    report.setReportDate(request.getReportDate());
+	    report.setReportTime(request.getReportTime());
+	    report.setStatus(request.getStatus());
+	    report.setPriority(request.getPriority());
+	    report.setNotes(request.getNotes());
+	    report.setDraftData(request.getDraftData());
+
+	    if (request.getImageUrls() != null) {
+	        report.setImageUrls(request.getImageUrls());
+	    }
+
+	    report.setVideoPath(request.getVideoPath());
+	    report.setVideoUrl(request.getVideoUrl());
+
+	    if (request.getVideoUrls() != null) {
+	        report.setVideoUrls(request.getVideoUrls());
+	    } else if (request.getVideoUrl() != null
+	            && !request.getVideoUrl().isBlank()) {
+	        report.setVideoUrls(List.of(request.getVideoUrl()));
+	    }
+
+	    report.setReportLifecycle("DRAFT");
+
+	    report.setUpdatedAt(
+	            ZonedDateTime.now(ZoneId.of("Asia/Kolkata"))
+	                    .toLocalDateTime()
+	    );
+
+	    return reportRepository.save(report);
+	}
+	
+	@Override
+	public Report updateDraft(
+	        Long id,
+	        ReportRequest request,
+	        MultipartFile pdf) {
+
+	    Report report =
+	            reportRepository.findById(id).orElse(null);
+
+	    if (report == null) {
+	        return null;
+	    }
+
+	    if (!"DRAFT".equals(report.getReportLifecycle())) {
+	        return report;
+	    }
+
+	    report.setClientId(request.getClientId());
+	    report.setReportDate(request.getReportDate());
+	    report.setReportTime(request.getReportTime());
+	    report.setStatus(request.getStatus());
+	    report.setPriority(request.getPriority());
+	    report.setNotes(request.getNotes());
+	    report.setDraftData(request.getDraftData());
+
+	    if (request.getImageUrls() != null) {
+	        report.setImageUrls(request.getImageUrls());
+	    }
+
+	    report.setVideoPath(request.getVideoPath());
+	    report.setVideoUrl(request.getVideoUrl());
+
+	    if (request.getVideoUrls() != null) {
+	        report.setVideoUrls(request.getVideoUrls());
+	    } else if (
+	            request.getVideoUrl() != null &&
+	            !request.getVideoUrl().isBlank()) {
+
+	        report.setVideoUrls(
+	                List.of(request.getVideoUrl())
+	        );
+	    }
+
+	    /*
+	     * If a new PDF is attached while editing
+	     * the draft, replace the old PDF.
+	     */
+	    if (pdf != null && !pdf.isEmpty()) {
+
+	        String oldPdfUrl = report.getPdfUrl();
+
+	        try {
+	            String newPdfUrl =
+	                    cloudinaryService.uploadPdf(pdf);
+
+	            report.setPdfUrl(newPdfUrl);
+
+	            if (oldPdfUrl != null
+	                    && !oldPdfUrl.isBlank()
+	                    && !oldPdfUrl.equals(newPdfUrl)) {
+
+	                try {
+	                    cloudinaryService.deleteFile(oldPdfUrl);
+	                } catch (Exception e) {
+	                    e.printStackTrace();
+	                }
+	            }
+
+	        } catch (IOException e) {
+	            throw new RuntimeException(
+	                    "Failed to upload updated draft PDF",
+	                    e
+	            );
+	        }
+	    }
+
+	    report.setReportLifecycle("DRAFT");
+
+	    report.setUpdatedAt(
+	            ZonedDateTime
+	                    .now(ZoneId.of("Asia/Kolkata"))
+	                    .toLocalDateTime()
+	    );
+
+	    return reportRepository.save(report);
+	}
+	
+	
+	@Override
+	public Report submitDraft(
+	        Long id,
+	        ReportRequest request,
+	        MultipartFile pdf) {
+
+	    Report report =
+	            reportRepository.findById(id).orElse(null);
+
+	    if (report == null) {
+	        return null;
+	    }
+
+	    if (!"DRAFT".equals(report.getReportLifecycle())) {
+	        return report;
+	    }
+
+	    report.setClientId(request.getClientId());
+	    report.setStatus(request.getStatus());
+	    report.setPriority(request.getPriority());
+	    report.setNotes(request.getNotes());
+
+	    if (request.getImageUrls() != null) {
+	        report.setImageUrls(request.getImageUrls());
+	    }
+
+	    report.setVideoPath(request.getVideoPath());
+	    report.setVideoUrl(request.getVideoUrl());
+
+	    if (request.getVideoUrls() != null) {
+	        report.setVideoUrls(request.getVideoUrls());
+	    } else if (
+	            request.getVideoUrl() != null &&
+	            !request.getVideoUrl().isBlank()) {
+
+	        report.setVideoUrls(
+	                List.of(request.getVideoUrl())
+	        );
+	    }
+
+	    /*
+	     * Replace the old PDF when a newer PDF
+	     * is attached during final submission.
+	     */
+	    if (pdf != null && !pdf.isEmpty()) {
+
+	        String oldPdfUrl = report.getPdfUrl();
+
+	        try {
+	            String newPdfUrl =
+	                    cloudinaryService.uploadPdf(pdf);
+
+	            report.setPdfUrl(newPdfUrl);
+
+	            if (oldPdfUrl != null
+	                    && !oldPdfUrl.isBlank()
+	                    && !oldPdfUrl.equals(newPdfUrl)) {
+
+	                try {
+	                    cloudinaryService.deleteFile(oldPdfUrl);
+	                } catch (Exception e) {
+	                    e.printStackTrace();
+	                }
+	            }
+
+	        } catch (IOException e) {
+	            throw new RuntimeException(
+	                    "Failed to upload final report PDF",
+	                    e
+	            );
+	        }
+	    }
+
+	    ZonedDateTime indiaNow =
+	            ZonedDateTime.now(
+	                    ZoneId.of("Asia/Kolkata")
+	            );
+
+	    /*
+	     * Final submitted report gets the final
+	     * submission date and time.
+	     */
+	    report.setCreatedAt(
+	            indiaNow.toLocalDateTime()
+	    );
+
+	    report.setReportDate(
+	            indiaNow.format(
+	                    DateTimeFormatter.ofPattern(
+	                            "dd-MM-yyyy",
+	                            Locale.ENGLISH
+	                    )
+	            )
+	    );
+
+	    report.setReportTime(
+	            indiaNow.format(
+	                    DateTimeFormatter.ofPattern(
+	                            "hh:mm a",
+	                            Locale.ENGLISH
+	                    )
+	            )
+	    );
+
+	    /*
+	     * The SAME draft row becomes submitted.
+	     */
+	    report.setReportLifecycle("SUBMITTED");
+
+	    /*
+	     * Draft data is no longer needed.
+	     */
+	    report.setDraftData(null);
+
+	    report.setUpdatedAt(
+	            indiaNow.toLocalDateTime()
+	    );
+
+	    return reportRepository.save(report);
+	}
+	
+	
+	
+	// -------------------------------------------------------------------------------------------
+
+	
     @Override
     public List<Report> getAllReports() {
         return reportRepository.findAllByOrderByCreatedAtDesc();
@@ -311,5 +623,31 @@ public class ReportServiceImpl implements ReportService {
         return reportRepository
                 .findTop5ByOrderByCreatedAtDesc();
 
+    }
+    
+    @Override
+    public Page<Report> getSubmittedReportsByClient(
+            Long clientId,
+            int page,
+            int size) {
+
+        return reportRepository
+                .findByClientIdAndReportLifecycleOrderByCreatedAtDesc(
+                        clientId,
+                        "SUBMITTED",
+                        PageRequest.of(page, size)
+                );
+    }
+    
+    @Override
+    public Page<Report> getSubmittedReports(
+            int page,
+            int size) {
+
+        return reportRepository
+                .findByReportLifecycleOrderByCreatedAtDesc(
+                        "SUBMITTED",
+                        PageRequest.of(page, size)
+                );
     }
 }

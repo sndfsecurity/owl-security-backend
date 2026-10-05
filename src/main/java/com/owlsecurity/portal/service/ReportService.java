@@ -13,7 +13,31 @@ public interface ReportService {
     Report saveReport(Report report);
     
     Report saveReport(Report report, MultipartFile pdf);
+    
+    // New draft methods
+    
+    Report saveDraft(Report report);
 
+    Report saveDraft(Report report, MultipartFile pdf);
+
+    List<Report> getDraftsByClient(Long clientId);
+
+    Report updateDraft(Long id, ReportRequest request);
+    
+    Report updateDraft(
+            Long id,
+            ReportRequest request,
+            MultipartFile pdf
+    );
+
+    Report submitDraft(
+            Long id,
+            ReportRequest request,
+            MultipartFile pdf
+    );
+    
+    // Existing methods - DO NOT CHANGE
+    
     List<Report> getAllReports();
 
     Report getReportById(Long id);
@@ -71,5 +95,16 @@ public interface ReportService {
     );
     
     List<Report> getRecentReports();
+    
+    Page<Report> getSubmittedReportsByClient(
+            Long clientId,
+            int page,
+            int size
+    );
+    
+    Page<Report> getSubmittedReports(
+            int page,
+            int size
+    );
     
 }
