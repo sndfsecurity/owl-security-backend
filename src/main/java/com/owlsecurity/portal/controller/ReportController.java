@@ -203,6 +203,43 @@ public class ReportController {
         );
     }
     
+    @GetMapping("/submitted/range")
+    public Page<Report> getSubmittedReportsByRange(
+            @RequestParam String fromDate,
+            @RequestParam String toDate,
+            @RequestParam(required = false) Long clientId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+
+        LocalDateTime start =
+                LocalDate.parse(fromDate)
+                        .atStartOfDay();
+
+        LocalDateTime end =
+                LocalDate.parse(toDate)
+                        .atTime(23, 59, 59);
+
+        if (clientId != null) {
+            return reportService
+                    .getSubmittedReportsByClientAndDateRange(
+                            clientId,
+                            start,
+                            end,
+                            page,
+                            size
+                    );
+        }
+
+        return reportService
+                .getSubmittedReportsByDateRange(
+                        start,
+                        end,
+                        page,
+                        size
+                );
+    }
+    
 
     @GetMapping("/{id}")
     public Report getReportById(@PathVariable Long id) {

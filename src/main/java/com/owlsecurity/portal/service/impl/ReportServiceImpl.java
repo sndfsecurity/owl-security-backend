@@ -650,4 +650,44 @@ public class ReportServiceImpl implements ReportService {
                         PageRequest.of(page, size)
                 );
     }
+    
+    @Override
+    public Page<Report> getSubmittedReportsByDateRange(
+            LocalDateTime start,
+            LocalDateTime end,
+            int page,
+            int size) {
+
+        Pageable pageable =
+                PageRequest.of(page, size);
+
+        return reportRepository
+                .findByReportLifecycleAndCreatedAtBetweenOrderByCreatedAtDesc(
+                        "SUBMITTED",
+                        start,
+                        end,
+                        pageable
+                );
+    }
+
+    @Override
+    public Page<Report> getSubmittedReportsByClientAndDateRange(
+            Long clientId,
+            LocalDateTime start,
+            LocalDateTime end,
+            int page,
+            int size) {
+
+        Pageable pageable =
+                PageRequest.of(page, size);
+
+        return reportRepository
+                .findByClientIdAndReportLifecycleAndCreatedAtBetweenOrderByCreatedAtDesc(
+                        clientId,
+                        "SUBMITTED",
+                        start,
+                        end,
+                        pageable
+                );
+    }
 }

@@ -107,4 +107,19 @@ public interface ReportService {
             int size
     );
     
+    Page<Report> getSubmittedReportsByDateRange(
+            LocalDateTime start,
+            LocalDateTime end,
+            int page,
+            int size
+    );
+
+    Page<Report> getSubmittedReportsByClientAndDateRange(
+            Long clientId,
+            LocalDateTime start,
+            LocalDateTime end,
+            int page,
+            int size
+    );
+    
 }

@@ -83,5 +83,20 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
 	            String reportLifecycle,
 	            Pageable pageable
 	    );
+	    
+	    Page<Report> findByReportLifecycleAndCreatedAtBetweenOrderByCreatedAtDesc(
+	            String reportLifecycle,
+	            LocalDateTime start,
+	            LocalDateTime end,
+	            Pageable pageable
+	    );
+
+	    Page<Report> findByClientIdAndReportLifecycleAndCreatedAtBetweenOrderByCreatedAtDesc(
+	            Long clientId,
+	            String reportLifecycle,
+	            LocalDateTime start,
+	            LocalDateTime end,
+	            Pageable pageable
+	    );
 
 }
