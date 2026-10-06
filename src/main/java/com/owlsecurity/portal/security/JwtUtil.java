@@ -29,11 +29,11 @@ public class JwtUtil {
                 .claim("role", role)
                 .setIssuedAt(new Date())
                 .setExpiration(
-                        new Date(
-                                System.currentTimeMillis()
-                                        + 86400000
-                        )
-                )
+                	    new Date(
+                	        System.currentTimeMillis()
+                	            + (60 * 1000)
+                	    )
+                	)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
