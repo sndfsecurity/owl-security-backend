@@ -22,6 +22,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import com.owlsecurity.portal.service.WebPushNotificationService;
+
 import java.io.IOException;
 
 @Service
@@ -29,15 +31,19 @@ public class ReportServiceImpl implements ReportService {
 
 	private final ReportRepository reportRepository;
 	private final CloudinaryService cloudinaryService;
+	
+	private final WebPushNotificationService webPushNotificationService;
 
 	public ReportServiceImpl(
 	        ReportRepository reportRepository,
-	        CloudinaryService cloudinaryService
+	        CloudinaryService cloudinaryService,
+	        WebPushNotificationService webPushNotificationService
 	) {
 	    this.reportRepository = reportRepository;
 	    this.cloudinaryService = cloudinaryService;
+	    this.webPushNotificationService =
+	            webPushNotificationService;
 	}
-	
 	
 	@Override
 	public Report saveReport(Report report) {
@@ -65,7 +71,25 @@ public class ReportServiceImpl implements ReportService {
 	        )
 	    );
 
-	    return reportRepository.save(report);
+//	    return reportRepository.save(report);
+	    
+	    
+	    Report savedReport =
+	            reportRepository.save(report);
+
+	    try {
+	        webPushNotificationService.sendReportNotification(
+	                savedReport
+	        );
+	    } catch (Exception e) {
+	        System.err.println(
+	                "Report saved, but notification failed for client: "
+	                        + savedReport.getClientId()
+	        );
+	        e.printStackTrace();
+	    }
+
+	    return savedReport;
 	}
 	
 	@Override
@@ -385,8 +409,24 @@ public class ReportServiceImpl implements ReportService {
 	            indiaNow.toLocalDateTime()
 	    );
 
-	    return reportRepository.save(report);
-	}
+	    Report savedReport =
+	            reportRepository.save(report);
+
+	    try {
+	        webPushNotificationService.sendReportNotification(
+	                savedReport
+	        );
+	    } catch (Exception e) {
+
+	        System.err.println(
+	                "Report submitted, but notification failed for client: "
+	                        + savedReport.getClientId()
+	        );
+
+	        e.printStackTrace();
+	    }
+
+	    return savedReport;	}
 	
 	
 	
