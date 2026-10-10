@@ -18,6 +18,7 @@ import com.owlsecurity.portal.repository.ReportRepository;
 import com.owlsecurity.portal.service.CloudinaryService;
 import com.owlsecurity.portal.service.ReportService;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -26,6 +27,8 @@ import com.owlsecurity.portal.service.WebPushNotificationService;
 
 import java.io.IOException;
 
+import com.owlsecurity.portal.security.ClientAccessService;
+
 @Service
 public class ReportServiceImpl implements ReportService {
 
@@ -33,6 +36,9 @@ public class ReportServiceImpl implements ReportService {
 	private final CloudinaryService cloudinaryService;
 	
 	private final WebPushNotificationService webPushNotificationService;
+	
+	@Autowired
+	private ClientAccessService clientAccessService;
 
 	public ReportServiceImpl(
 	        ReportRepository reportRepository,
@@ -451,7 +457,6 @@ public class ReportServiceImpl implements ReportService {
             return null;
         }
 
-        report.setClientId(request.getClientId());
         report.setReportDate(request.getReportDate());
         report.setReportTime(request.getReportTime());
         report.setStatus(request.getStatus());
@@ -657,13 +662,26 @@ public class ReportServiceImpl implements ReportService {
                 );
     }
     
+    
     @Override
     public List<Report> getRecentReports() {
 
-        return reportRepository
-                .findTop5ByOrderByCreatedAtDesc();
+        if (clientAccessService.isAdmin()) {
+            return reportRepository
+                    .findTop5ByReportLifecycleOrderByCreatedAtDesc(
+                            "SUBMITTED"
+                    );
+        }
 
+        Long clientId = clientAccessService.getLoggedInClientId();
+
+        return reportRepository
+                .findTop5ByClientIdAndReportLifecycleOrderByCreatedAtDesc(
+                        clientId,
+                        "SUBMITTED"
+                );
     }
+    
     
     @Override
     public Page<Report> getSubmittedReportsByClient(

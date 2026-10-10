@@ -15,20 +15,29 @@ import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.RequestPart;
 
+import com.owlsecurity.portal.security.ClientAccessService;
+import org.springframework.security.access.AccessDeniedException;
+
 
 @RestController
 @RequestMapping("/api/reports")
 public class ReportController {
 
-    private final ReportService reportService;
+	private final ReportService reportService;
+	private final ClientAccessService clientAccessService;
 
-    public ReportController(ReportService reportService) {
-        this.reportService = reportService;
-    }
+	public ReportController(
+	        ReportService reportService,
+	        ClientAccessService clientAccessService) {
+	    this.reportService = reportService;
+	    this.clientAccessService = clientAccessService;
+	}
 
     @PostMapping
     public Report createReport(@RequestBody ReportRequest request) {
-
+    	
+        clientAccessService.requireAdmin();
+        
         Report report = new Report();
 
         report.setClientId(request.getClientId());
@@ -58,8 +67,12 @@ public class ReportController {
     
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Report createReportWithPdf(
+    		
             @RequestPart("request") ReportRequest request,
             @RequestPart(value = "pdf", required = false) MultipartFile pdf) {
+    	
+        clientAccessService.requireAdmin();
+
 
         Report report = new Report();
         report.setClientId(request.getClientId());
@@ -97,6 +110,8 @@ public class ReportController {
     public Report saveDraft(
             @RequestPart("request") ReportRequest request,
             @RequestPart(value = "pdf", required = false) MultipartFile pdf) {
+    	
+    	clientAccessService.requireAdmin();
 
         Report report = new Report();
 
@@ -132,6 +147,8 @@ public class ReportController {
     public List<Report> getDraftsByClient(
             @PathVariable Long clientId) {
 
+    	clientAccessService.requireAdmin();
+
         return reportService.getDraftsByClient(clientId);
     }
 
@@ -139,9 +156,12 @@ public class ReportController {
     public Report updateDraft(
             @PathVariable Long id,
             @RequestBody ReportRequest request) {
+    	
+        clientAccessService.requireAdmin();
 
         return reportService.updateDraft(id, request);
     }
+    
     
     @PutMapping(
             value = "/draft/{id}/save",
@@ -151,9 +171,13 @@ public class ReportController {
             @PathVariable Long id,
             @RequestPart("request") ReportRequest request,
             @RequestPart(value = "pdf", required = false) MultipartFile pdf) {
+    	
+        clientAccessService.requireAdmin();
+
 
         return reportService.updateDraft(id, request, pdf);
     }
+    
 
     @PutMapping(
             value = "/draft/{id}/submit",
@@ -163,6 +187,9 @@ public class ReportController {
             @PathVariable Long id,
             @RequestPart("request") ReportRequest request,
             @RequestPart(value = "pdf", required = false) MultipartFile pdf) {
+    	
+        clientAccessService.requireAdmin();
+
 
         return reportService.submitDraft(id, request, pdf);
     }
@@ -184,7 +211,9 @@ public class ReportController {
             int size
 
     ) {
-
+	
+    	clientAccessService.requireAdmin();
+    	
         return reportService
                 .getAllReports(
                         page,
@@ -197,82 +226,134 @@ public class ReportController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
+    	clientAccessService.requireAdmin();
         return reportService.getSubmittedReports(
                 page,
                 size
         );
     }
     
-    @GetMapping("/submitted/range")
-    public Page<Report> getSubmittedReportsByRange(
-            @RequestParam String fromDate,
-            @RequestParam String toDate,
-            @RequestParam(required = false) Long clientId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
-
-        LocalDateTime start =
-                LocalDate.parse(fromDate)
-                        .atStartOfDay();
-
-        LocalDateTime end =
-                LocalDate.parse(toDate)
-                        .atTime(23, 59, 59);
-
-        if (clientId != null) {
-            return reportService
-                    .getSubmittedReportsByClientAndDateRange(
-                            clientId,
-                            start,
-                            end,
-                            page,
-                            size
-                    );
-        }
-
-        return reportService
-                .getSubmittedReportsByDateRange(
-                        start,
-                        end,
-                        page,
-                        size
-                );
-    }
     
+
+		@GetMapping("/submitted/range")
+		public Page<Report> getSubmittedReportsByRange(
+		        @RequestParam String fromDate,
+		        @RequestParam String toDate,
+		        @RequestParam(required = false) Long clientId,
+		        @RequestParam(defaultValue = "0") int page,
+		        @RequestParam(defaultValue = "10") int size
+		) {
+		    LocalDateTime start =
+		            LocalDate.parse(fromDate).atStartOfDay();
+		
+		    LocalDateTime end =
+		            LocalDate.parse(toDate).atTime(23, 59, 59);
+		
+		    if (clientAccessService.isAdmin()) {
+		        if (clientId != null) {
+		            return reportService.getSubmittedReportsByClientAndDateRange(
+		                    clientId, start, end, page, size
+		            );
+		        }
+		
+		        return reportService.getSubmittedReportsByDateRange(
+		                start, end, page, size
+		        );
+		    }
+		
+		    Long loggedInClientId =
+		            clientAccessService.getLoggedInClientId();
+		
+		    if (clientId != null && !clientId.equals(loggedInClientId)) {
+		        throw new AccessDeniedException(
+		                "You cannot access another client's data"
+		        );
+		    }
+		
+		    return reportService.getSubmittedReportsByClientAndDateRange(
+		            loggedInClientId, start, end, page, size
+		    );
+		}
+
+    
+   
 
     @GetMapping("/{id}")
     public Report getReportById(@PathVariable Long id) {
-        return reportService.getReportById(id);
+
+        Report report = reportService.getReportById(id);
+
+        if (report == null) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.NOT_FOUND,
+                    "Report not found"
+            );
+        }
+
+        clientAccessService.verifyClientAccess(report.getClientId());
+
+        return report;
     }
+    
 
-    @PutMapping("/{id}")
-    public Report updateReport(
-            @PathVariable Long id,
-            @RequestBody ReportRequest request) {
 
-        return reportService.updateReport(id, request);
-    }
+		@PutMapping("/{id}")
+		public Report updateReport(
+		        @PathVariable Long id,
+		        @RequestBody ReportRequest request) {
+		
+		    Report existingReport = reportService.getReportById(id);
+		
+		    if (existingReport == null) {
+		        throw new org.springframework.web.server.ResponseStatusException(
+		                org.springframework.http.HttpStatus.NOT_FOUND,
+		                "Report not found"
+		        );
+		    }
+		
+		    clientAccessService.requireAdmin();
+		    
+		    
+		    if (request.getClientId() != null
+		            && !request.getClientId().equals(existingReport.getClientId())) {
+		        throw new org.springframework.web.server.ResponseStatusException(
+		                org.springframework.http.HttpStatus.FORBIDDEN,
+		                "Changing report ownership is not allowed"
+		        );
+		    }
+		
+		    return reportService.updateReport(id, request);
+		}
 
-    @DeleteMapping("/{id}")
-    public String deleteReport(@PathVariable Long id) {
 
-        reportService.deleteReport(id);
+    
+		@DeleteMapping("/{id}")
+		public String deleteReport(@PathVariable Long id) {
 
-        return "Report Deleted Successfully";
-    }
+		    Report report = reportService.getReportById(id);
+
+		    if (report == null) {
+		        throw new org.springframework.web.server.ResponseStatusException(
+		                org.springframework.http.HttpStatus.NOT_FOUND,
+		                "Report not found"
+		        );
+		    }
+
+		    clientAccessService.requireAdmin();
+
+		    reportService.deleteReport(id);
+
+		    return "Report Deleted Successfully";
+		}
     
     
     @GetMapping("/client/{clientId}")
     public Page<Report> getClientReports(
             @PathVariable Long clientId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
 
-            @RequestParam(defaultValue = "0")
-            int page,
-
-            @RequestParam(defaultValue = "5")
-            int size
-    ) {
+        clientAccessService.verifyClientAccess(clientId);
 
         return reportService.getReportsByClient(
                 clientId,
@@ -281,11 +362,14 @@ public class ReportController {
         );
     }
     
+    
     @GetMapping("/client/{clientId}/submitted")
     public Page<Report> getSubmittedClientReports(
             @PathVariable Long clientId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
+    	
+    	clientAccessService.verifyClientAccess(clientId);
 
         return reportService.getSubmittedReportsByClient(
                 clientId,
@@ -317,7 +401,7 @@ public class ReportController {
     ) 
     
     {
-
+    	
         return reportService
                 .getReportsByClientAndDate(
                         clientId,
@@ -327,58 +411,51 @@ public class ReportController {
     
     
     
-    @GetMapping("/range")
-    public Page<Report> getReportsByRange(
+    
 
-            @RequestParam String fromDate,
-            @RequestParam String toDate,
+		@GetMapping("/range")
+		public Page<Report> getReportsByRange(
+		        @RequestParam String fromDate,
+		        @RequestParam String toDate,
+		        @RequestParam(required = false) Long clientId,
+		        @RequestParam(defaultValue = "0") int page,
+		        @RequestParam(defaultValue = "8") int size
+		) {
+		    LocalDateTime start =
+		            LocalDate.parse(fromDate).atStartOfDay();
+		
+		    LocalDateTime end =
+		            LocalDate.parse(toDate).atTime(23, 59, 59);
+		
+		    if (clientAccessService.isAdmin()) {
+		        if (clientId != null) {
+		            return reportService.getReportsByClientAndDateRange(
+		                    clientId, start, end, page, size
+		            );
+		        }
+		
+		        return reportService.getReportsByDateRange(
+		                start, end, page, size
+		        );
+		    }
+		
+		    Long loggedInClientId =
+		            clientAccessService.getLoggedInClientId();
+		
+		    if (clientId != null && !clientId.equals(loggedInClientId)) {
+		        throw new AccessDeniedException(
+		                "You cannot access another client's data"
+		        );
+		    }
+		
+		    return reportService.getReportsByClientAndDateRange(
+		            loggedInClientId, start, end, page, size
+		    );
+		}
 
-            @RequestParam(required = false)
-            Long clientId,
-
-            @RequestParam(
-                    defaultValue = "0"
-            )
-            int page,
-
-            @RequestParam(
-                    defaultValue = "8"
-            )
-            int size
-    ) {
-
-        LocalDateTime start =
-                LocalDate.parse(fromDate)
-                        .atStartOfDay();
-
-        LocalDateTime end =
-                LocalDate.parse(toDate)
-                        .atTime(
-                                23,
-                                59,
-                                59
-                        );
-
-        if(clientId != null) {
-
-            return reportService
-                    .getReportsByClientAndDateRange(
-                            clientId,
-                            start,
-                            end,
-                            page,
-                            size
-                    );
-        }
-
-        return reportService
-                .getReportsByDateRange(
-                        start,
-                        end,
-                        page,
-                        size
-                );
-    }
+    
+    
+    
     
     @GetMapping("/recent")
     public List<Report> getRecentReports() {

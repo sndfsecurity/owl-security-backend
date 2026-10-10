@@ -68,6 +68,21 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
 	    
 	    List<Report> findTop5ByOrderByCreatedAtDesc();
 	    
+	    List<Report> findTop5ByClientIdOrderByCreatedAtDesc(
+	            Long clientId
+	    );    
+	    
+	    
+	    List<Report> findTop5ByReportLifecycleOrderByCreatedAtDesc(
+	            String reportLifecycle
+	    );
+	    
+	    List<Report> findTop5ByClientIdAndReportLifecycleOrderByCreatedAtDesc(
+	            Long clientId,
+	            String reportLifecycle
+	    );
+	    
+	      
 	    List<Report> findByClientIdAndReportLifecycleOrderByUpdatedAtDesc(
 	            Long clientId,
 	            String reportLifecycle
