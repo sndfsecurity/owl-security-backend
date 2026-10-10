@@ -180,4 +180,95 @@ public class WebPushNotificationService {
 
         return sentCount;
     }
+    
+
+public int sendClientMessageNotification(Report report)
+        throws Exception {
+
+    return sendMessagePush(
+            pushSubscriptionRepository.findByRoleAndActiveTrue("ADMIN"),
+            "New Report Message",
+            "A client has sent a message on report #" + report.getId(),
+            "/clients/" + report.getClientId() + "/reports",
+            "report-message-" + report.getId()
+    );
+}
+
+public int sendAdminReplyNotification(Report report)
+        throws Exception {
+
+    Long clientId = report.getClientId();
+
+    if (clientId == null) {
+        return 0;
+    }
+
+    return sendMessagePush(
+            pushSubscriptionRepository.findByClientIdAndActiveTrue(clientId),
+            "New Report Reply",
+            "The Admin has replied to your report #" + report.getId(),
+            "/client/reports",
+            "report-reply-" + report.getId()
+    );
+}
+
+private int sendMessagePush(
+        List<PushSubscription> subscriptions,
+        String title,
+        String body,
+        String url,
+        String tag
+) throws Exception {
+
+    if (subscriptions.isEmpty()) {
+        return 0;
+    }
+
+    PushAsyncService pushService = new PushAsyncService(
+            vapidPublicKey,
+            vapidPrivateKey,
+            vapidSubject
+    );
+
+    Map<String, Object> payload = new HashMap<>();
+    payload.put("title", title);
+    payload.put("body", body);
+    payload.put("url", url);
+    payload.put("tag", tag);
+
+    String payloadJson = objectMapper.writeValueAsString(payload);
+    int sentCount = 0;
+
+    for (PushSubscription subscription : subscriptions) {
+        try {
+            Notification notification = new Notification(
+                    subscription.getEndpoint(),
+                    subscription.getP256dh(),
+                    subscription.getAuth(),
+                    payloadJson
+            );
+
+            Response response = pushService.send(notification)
+                    .get(15, TimeUnit.SECONDS);
+
+            int statusCode = response.getStatusCode();
+
+            if (statusCode >= 200 && statusCode < 300) {
+                sentCount++;
+            } else if (statusCode == 404 || statusCode == 410) {
+                subscription.setActive(false);
+                pushSubscriptionRepository.save(subscription);
+            }
+
+        } catch (Exception e) {
+            System.err.println(
+                    "Failed to send message notification: "
+                            + e.getMessage()
+            );
+        }
+    }
+
+    return sentCount;
+}
+
 }

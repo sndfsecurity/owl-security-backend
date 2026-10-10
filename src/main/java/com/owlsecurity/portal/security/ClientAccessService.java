@@ -55,12 +55,16 @@ public class ClientAccessService {
         }
     }
 
+    
     public Long getLoggedInClientId() {
         User user = getLoggedInUser();
 
-        if (user.getRole() != null
-                && (user.getRole().equalsIgnoreCase("ADMIN")
-                || user.getRole().equalsIgnoreCase("ROLE_ADMIN"))) {
+        System.out.println("Logged-in user ID: " + user.getId());
+        System.out.println("Logged-in user role: " + user.getRole());
+
+        if (user.getRole() != null &&
+                (user.getRole().equalsIgnoreCase("ADMIN") ||
+                 user.getRole().equalsIgnoreCase("ROLE_ADMIN"))) {
             throw new AccessDeniedException(
                     "Admin does not have a client-specific ID");
         }
@@ -69,8 +73,11 @@ public class ClientAccessService {
                 .orElseThrow(() ->
                         new AccessDeniedException("Client not found"));
 
+        System.out.println("Logged-in client ID: " + client.getId());
+
         return client.getId();
     }
+    
 
     public void verifyClientAccess(Long requestedClientId) {
 

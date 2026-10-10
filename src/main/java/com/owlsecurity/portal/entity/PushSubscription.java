@@ -12,6 +12,11 @@ public class PushSubscription {
     private Long id;
 
     private Long clientId;
+    
+    private Long userId;
+
+    @Column(length = 20)
+    private String role;
 
     @Column(nullable = false, columnDefinition = "LONGTEXT")
     private String endpoint;
@@ -46,6 +51,22 @@ public class PushSubscription {
 
     public void setClientId(Long clientId) {
         this.clientId = clientId;
+    }
+    
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 
     public String getEndpoint() {

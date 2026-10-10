@@ -14,4 +14,6 @@ public interface PushSubscriptionRepository
     List<PushSubscription> findByClientIdAndActiveTrue(Long clientId);
 
     List<PushSubscription> findByClientId(Long clientId);
+    
+    List<PushSubscription> findByRoleAndActiveTrue(String role);
 }
