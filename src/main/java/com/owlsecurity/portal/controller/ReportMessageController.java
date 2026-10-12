@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import com.owlsecurity.portal.service.ReportMessageService.ReportMessageStatus;
 
 @RestController
 @RequestMapping("/api/reports/{reportId}/messages")
@@ -44,6 +45,15 @@ public class ReportMessageController {
                 reportId,
                 request.getMessage());
     }
+    
+
+	@GetMapping("/status")
+	public ReportMessageStatus getMessageStatus(
+	        @PathVariable Long reportId) {
+	
+	    return reportMessageService.getMessageStatus(reportId);
+	}
+
 
     // Request body DTO
     public static class MessageRequest {

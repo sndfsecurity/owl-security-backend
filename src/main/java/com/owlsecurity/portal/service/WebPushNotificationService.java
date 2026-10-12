@@ -21,12 +21,16 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import com.owlsecurity.portal.entity.Report;
 
+import com.owlsecurity.portal.entity.Client;
+import com.owlsecurity.portal.repository.ClientRepository;
+
 
 @Service
 public class WebPushNotificationService {
 
     private final PushSubscriptionRepository pushSubscriptionRepository;
     private final ObjectMapper objectMapper;
+    private final ClientRepository clientRepository;
 
     private final String vapidPublicKey;
     private final String vapidPrivateKey;
@@ -35,6 +39,7 @@ public class WebPushNotificationService {
     public WebPushNotificationService(
             PushSubscriptionRepository pushSubscriptionRepository,
             ObjectMapper objectMapper,
+            ClientRepository clientRepository,
             @Value("${webpush.vapid.public-key}")
             String vapidPublicKey,
             @Value("${webpush.vapid.private-key}")
@@ -47,6 +52,7 @@ public class WebPushNotificationService {
                 pushSubscriptionRepository;
 
         this.objectMapper = objectMapper;
+        this.clientRepository = clientRepository;
 
         this.vapidPublicKey = vapidPublicKey;
         this.vapidPrivateKey = vapidPrivateKey;
@@ -182,93 +188,139 @@ public class WebPushNotificationService {
     }
     
 
-public int sendClientMessageNotification(Report report)
-        throws Exception {
+    public int sendClientMessageNotification(Report report)
+            throws Exception {
 
-    return sendMessagePush(
-            pushSubscriptionRepository.findByRoleAndActiveTrue("ADMIN"),
-            "New Report Message",
-            "A client has sent a message on report #" + report.getId(),
-            "/clients/" + report.getClientId() + "/reports",
-            "report-message-" + report.getId()
-    );
-}
+        Long clientId = report.getClientId();
 
-public int sendAdminReplyNotification(Report report)
-        throws Exception {
-
-    Long clientId = report.getClientId();
-
-    if (clientId == null) {
-        return 0;
-    }
-
-    return sendMessagePush(
-            pushSubscriptionRepository.findByClientIdAndActiveTrue(clientId),
-            "New Report Reply",
-            "The Admin has replied to your report #" + report.getId(),
-            "/client/reports",
-            "report-reply-" + report.getId()
-    );
-}
-
-private int sendMessagePush(
-        List<PushSubscription> subscriptions,
-        String title,
-        String body,
-        String url,
-        String tag
-) throws Exception {
-
-    if (subscriptions.isEmpty()) {
-        return 0;
-    }
-
-    PushAsyncService pushService = new PushAsyncService(
-            vapidPublicKey,
-            vapidPrivateKey,
-            vapidSubject
-    );
-
-    Map<String, Object> payload = new HashMap<>();
-    payload.put("title", title);
-    payload.put("body", body);
-    payload.put("url", url);
-    payload.put("tag", tag);
-
-    String payloadJson = objectMapper.writeValueAsString(payload);
-    int sentCount = 0;
-
-    for (PushSubscription subscription : subscriptions) {
-        try {
-            Notification notification = new Notification(
-                    subscription.getEndpoint(),
-                    subscription.getP256dh(),
-                    subscription.getAuth(),
-                    payloadJson
-            );
-
-            Response response = pushService.send(notification)
-                    .get(15, TimeUnit.SECONDS);
-
-            int statusCode = response.getStatusCode();
-
-            if (statusCode >= 200 && statusCode < 300) {
-                sentCount++;
-            } else if (statusCode == 404 || statusCode == 410) {
-                subscription.setActive(false);
-                pushSubscriptionRepository.save(subscription);
-            }
-
-        } catch (Exception e) {
-            System.err.println(
-                    "Failed to send message notification: "
-                            + e.getMessage()
-            );
+        if (clientId == null) {
+            return 0;
         }
-    }
 
-    return sentCount;
-}
+        Client client = clientRepository.findById(clientId)
+                .orElse(null);
+
+        String companyName = client != null
+                && client.getCompanyName() != null
+                && !client.getCompanyName().isBlank()
+                ? client.getCompanyName()
+                : "A client";
+
+        String reportDetails = buildReportDetails(report);
+
+        return sendMessagePush(
+                pushSubscriptionRepository.findByRoleAndActiveTrue("ADMIN"),
+                "New Message — " + companyName,
+                companyName + " sent a message regarding the report dated "
+                        + reportDetails + ".",
+                "/clients/" + clientId + "/reports?reportId="
+                        + report.getId() + "&openConversation=true",
+                "report-message-" + report.getId()
+        );
+    }
+    
+
+	
+    public int sendAdminReplyNotification(Report report)
+            throws Exception {
+
+        Long clientId = report.getClientId();
+
+        if (clientId == null) {
+            return 0;
+        }
+
+        String reportDetails = buildReportDetails(report);
+
+        return sendMessagePush(
+                pushSubscriptionRepository.findByClientIdAndActiveTrue(clientId),
+                "New Admin Reply",
+                "Admin replied to your report dated "
+                        + reportDetails + ".",
+                "/client/reports?reportId="
+                        + report.getId() + "&openConversation=true",
+                "report-reply-" + report.getId()
+        );
+    }
+    
+    
+    //helper method..........
+    
+    
+    private String buildReportDetails(Report report) {
+
+        String reportDate = report.getReportDate();
+        String reportTime = report.getReportTime();
+
+        if (reportDate == null || reportDate.isBlank()) {
+            reportDate = "an unspecified date";
+        }
+
+        if (reportTime == null || reportTime.isBlank()) {
+            return reportDate;
+        }
+
+        return reportDate + " at " + reportTime;
+    }
+    
+
+			private int sendMessagePush(
+			        List<PushSubscription> subscriptions,
+			        String title,
+			        String body,
+			        String url,
+			        String tag
+			) throws Exception {
+			
+			    if (subscriptions.isEmpty()) {
+			        return 0;
+			    }
+			
+			    PushAsyncService pushService = new PushAsyncService(
+			            vapidPublicKey,
+			            vapidPrivateKey,
+			            vapidSubject
+			    );
+			
+			    Map<String, Object> payload = new HashMap<>();
+			    payload.put("title", title);
+			    payload.put("body", body);
+			    payload.put("url", url);
+			    payload.put("tag", tag);
+			
+			    String payloadJson = objectMapper.writeValueAsString(payload);
+			    int sentCount = 0;
+			
+			    for (PushSubscription subscription : subscriptions) {
+			        try {
+			            Notification notification = new Notification(
+			                    subscription.getEndpoint(),
+			                    subscription.getP256dh(),
+			                    subscription.getAuth(),
+			                    payloadJson
+			            );
+			
+			            Response response = pushService.send(notification)
+			                    .get(15, TimeUnit.SECONDS);
+			
+			            int statusCode = response.getStatusCode();
+			
+			            if (statusCode >= 200 && statusCode < 300) {
+			                sentCount++;
+			            } else if (statusCode == 404 || statusCode == 410) {
+			                subscription.setActive(false);
+			                pushSubscriptionRepository.save(subscription);
+			            }
+			
+			        } catch (Exception e) {
+			            System.err.println(
+			                    "Failed to send message notification: "
+			                            + e.getMessage()
+			            );
+			        }
+			    }
+			
+			    return sentCount;
+			}
 
 }

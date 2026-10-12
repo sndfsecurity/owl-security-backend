@@ -17,4 +17,16 @@ public interface ReportMessageRepository
             Long reportId,
             String senderRole
     );
+    
+    long countByReportId(Long reportId);
+
+    long countByReportIdAndSenderRoleNotAndReadByAdminFalse(
+            Long reportId,
+            String senderRole
+    );
+
+    long countByReportIdAndSenderRoleNotAndReadByClientFalse(
+            Long reportId,
+            String senderRole
+    );
 }

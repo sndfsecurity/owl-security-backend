@@ -31,6 +31,12 @@ public class ReportMessage {
     @Column(nullable = false)
     private LocalDateTime createdAt =
             LocalDateTime.now(ZoneId.of("Asia/Kolkata"));
+    
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
+    private boolean readByAdmin = true;
+
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
+    private boolean readByClient = true;
 
     public ReportMessage() {
     }
@@ -85,5 +91,21 @@ public class ReportMessage {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+    
+    public boolean isReadByAdmin() {
+        return readByAdmin;
+    }
+
+    public void setReadByAdmin(boolean readByAdmin) {
+        this.readByAdmin = readByAdmin;
+    }
+
+    public boolean isReadByClient() {
+        return readByClient;
+    }
+
+    public void setReadByClient(boolean readByClient) {
+        this.readByClient = readByClient;
     }
 }
