@@ -11,6 +11,7 @@ import nl.martijndwars.webpush.PushAsyncService;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import com.owlsecurity.portal.repository.ReportMessageRepository;
 
 import org.asynchttpclient.Response;
 
@@ -31,6 +32,7 @@ public class WebPushNotificationService {
     private final PushSubscriptionRepository pushSubscriptionRepository;
     private final ObjectMapper objectMapper;
     private final ClientRepository clientRepository;
+    private final ReportMessageRepository reportMessageRepository;
 
     private final String vapidPublicKey;
     private final String vapidPrivateKey;
@@ -40,6 +42,7 @@ public class WebPushNotificationService {
             PushSubscriptionRepository pushSubscriptionRepository,
             ObjectMapper objectMapper,
             ClientRepository clientRepository,
+            ReportMessageRepository reportMessageRepository,
             @Value("${webpush.vapid.public-key}")
             String vapidPublicKey,
             @Value("${webpush.vapid.private-key}")
@@ -53,6 +56,7 @@ public class WebPushNotificationService {
 
         this.objectMapper = objectMapper;
         this.clientRepository = clientRepository;
+        this.reportMessageRepository = reportMessageRepository;
 
         this.vapidPublicKey = vapidPublicKey;
         this.vapidPrivateKey = vapidPrivateKey;
@@ -94,19 +98,36 @@ public class WebPushNotificationService {
                         vapidPrivateKey,
                         vapidSubject
                 );
+    
 
-        Map<String, Object> payload =
-                new HashMap<>();
+		Client client = clientRepository.findById(clientId)
+		        .orElse(null);
+		
+		String companyName = client != null
+		        && client.getCompanyName() != null
+		        && !client.getCompanyName().isBlank()
+		        ? client.getCompanyName().trim()
+		        : "Client";
+		
+		String notificationMessage =
+		        getNotificationPreview(report.getNotes());
+		
+		if (notificationMessage.isBlank()) {
+		    notificationMessage = "A new security report has been submitted.";
+		}
+		
+		Map<String, Object> payload = new HashMap<>();
+		
+		payload.put(
+		        "title",
+		        "New Report: " + companyName
+		);
+		
+		payload.put(
+		        "body",
+		        notificationMessage
+		);
 
-        payload.put(
-                "title",
-                "New Security Report"
-        );
-
-        payload.put(
-                "body",
-                "A new security report has been submitted."
-        );
 
         payload.put(
                 "url",
@@ -188,81 +209,100 @@ public class WebPushNotificationService {
     }
     
 
-    public int sendClientMessageNotification(Report report)
-            throws Exception {
 
-        Long clientId = report.getClientId();
+		public int sendClientMessageNotification(Report report)
+		        throws Exception {
+		
+		    Long clientId = report.getClientId();
+		
+		    if (clientId == null) {
+		        return 0;
+		    }
+		
+		    Client client = clientRepository.findById(clientId)
+		            .orElse(null);
+		
+		    String companyName = client != null
+		            && client.getCompanyName() != null
+		            && !client.getCompanyName().isBlank()
+		            ? client.getCompanyName().trim()
+		            : "A client";
+		
+		    List<com.owlsecurity.portal.entity.ReportMessage> messages =
+		            reportMessageRepository
+		                    .findByReportIdOrderByCreatedAtAsc(report.getId());
+		
+		    String messagePreview = messages.stream()
+		            .filter(message ->
+		                    "CLIENT".equalsIgnoreCase(message.getSenderRole()))
+		            .max(java.util.Comparator.comparing(
+		                    com.owlsecurity.portal.entity.ReportMessage::getCreatedAt))
+		            .map(message -> getMessagePreview(message.getMessage()))
+		            .orElse("A new message has been received.");
+		
+		    return sendMessagePush(
+		            pushSubscriptionRepository.findByRoleAndActiveTrue("ADMIN"),
+		            "New Message — " + companyName,
+		            messagePreview + "\nReport: " + buildReportDetails(report),
+		            "/clients/" + clientId + "/reports?reportId="
+		                    + report.getId() + "&openConversation=true",
+		            "report-message-" + report.getId()
+		    );
+		}
 
-        if (clientId == null) {
-            return 0;
-        }
 
-        Client client = clientRepository.findById(clientId)
-                .orElse(null);
 
-        String companyName = client != null
-                && client.getCompanyName() != null
-                && !client.getCompanyName().isBlank()
-                ? client.getCompanyName()
-                : "A client";
+		public int sendAdminReplyNotification(Report report)
+		        throws Exception {
+		
+		    Long clientId = report.getClientId();
+		
+		    if (clientId == null) {
+		        return 0;
+		    }
+		
+		    List<com.owlsecurity.portal.entity.ReportMessage> messages =
+		            reportMessageRepository
+		                    .findByReportIdOrderByCreatedAtAsc(report.getId());
+		
+		    String messagePreview = messages.stream()
+		            .filter(message ->
+		                    "ADMIN".equalsIgnoreCase(message.getSenderRole()))
+		            .max(java.util.Comparator.comparing(
+		                    com.owlsecurity.portal.entity.ReportMessage::getCreatedAt))
+		            .map(message -> getMessagePreview(message.getMessage()))
+		            .orElse("A new admin reply has been received.");
+		
+		    return sendMessagePush(
+		            pushSubscriptionRepository.findByClientIdAndActiveTrue(clientId),
+		            "Admin Reply — OWL Security",
+		            messagePreview + "\nReport: " + buildReportDetails(report),
+		            "/client/reports?reportId="
+		                    + report.getId() + "&openConversation=true",
+		            "report-reply-" + report.getId()
+		    );
+		}
 
-        String reportDetails = buildReportDetails(report);
-
-        return sendMessagePush(
-                pushSubscriptionRepository.findByRoleAndActiveTrue("ADMIN"),
-                "New Message — " + companyName,
-                companyName + " sent a message regarding the report dated "
-                        + reportDetails + ".",
-                "/clients/" + clientId + "/reports?reportId="
-                        + report.getId() + "&openConversation=true",
-                "report-message-" + report.getId()
-        );
-    }
-    
-
-	
-    public int sendAdminReplyNotification(Report report)
-            throws Exception {
-
-        Long clientId = report.getClientId();
-
-        if (clientId == null) {
-            return 0;
-        }
-
-        String reportDetails = buildReportDetails(report);
-
-        return sendMessagePush(
-                pushSubscriptionRepository.findByClientIdAndActiveTrue(clientId),
-                "New Admin Reply",
-                "Admin replied to your report dated "
-                        + reportDetails + ".",
-                "/client/reports?reportId="
-                        + report.getId() + "&openConversation=true",
-                "report-reply-" + report.getId()
-        );
-    }
     
     
     //helper method..........
-    
-    
-    private String buildReportDetails(Report report) {
+   
 
-        String reportDate = report.getReportDate();
-        String reportTime = report.getReportTime();
-
-        if (reportDate == null || reportDate.isBlank()) {
-            reportDate = "an unspecified date";
-        }
-
-        if (reportTime == null || reportTime.isBlank()) {
-            return reportDate;
-        }
-
-        return reportDate + " at " + reportTime;
-    }
-    
+			private String buildReportDetails(Report report) {
+			    String reportDate = report.getReportDate();
+			    String reportTime = report.getReportTime();
+			
+			    if (reportDate == null || reportDate.isBlank()) {
+			        reportDate = "Date unavailable";
+			    }
+			
+			    if (reportTime == null || reportTime.isBlank()) {
+			        return reportDate;
+			    }
+			
+			    return reportDate + " · " + reportTime;
+			}
+			
 
 			private int sendMessagePush(
 			        List<PushSubscription> subscriptions,
@@ -322,5 +362,69 @@ public class WebPushNotificationService {
 			
 			    return sentCount;
 			}
+			
+			
+
+			private String getNotificationPreview(String notes) {
+			    if (notes == null || notes.isBlank()) {
+			        return "A new security report has been submitted.";
+			    }
+			
+			    // Convert HTML line breaks into newline characters
+			    String plainText = notes
+			            .replaceAll("(?i)<br\\s*/?>", "\n")
+			            .replaceAll("(?i)</p\\s*>", "\n")
+			            .replaceAll("(?i)</div\\s*>", "\n")
+			            .replaceAll("(?i)</li\\s*>", "\n");
+			
+			    // Remove remaining HTML tags
+			    plainText = plainText.replaceAll("<[^>]*>", "");
+			
+			    // Decode common HTML entities
+			    plainText = plainText
+			            .replace("&nbsp;", " ")
+			            .replace("&amp;", "&")
+			            .replace("&lt;", "<")
+			            .replace("&gt;", ">")
+			            .replace("&quot;", "\"")
+			            .replace("&#39;", "'")
+			            .replace("&apos;", "'");
+			
+			    return plainText.lines()
+			            .map(String::trim)
+			            .filter(line -> !line.isEmpty())
+			            .findFirst()
+			            .orElse("A new security report has been submitted.");
+			}
+			
+			
+
+		private String getMessagePreview(String message) {
+		    if (message == null || message.isBlank()) {
+		        return "A new message has been received.";
+		    }
+		
+		    String plainText = message
+		            .replaceAll("(?i)<br\\s*/?>", "\n")
+		            .replaceAll("(?i)</p\\s*>", "\n")
+		            .replaceAll("(?i)</div\\s*>", "\n")
+		            .replaceAll("(?i)</li\\s*>", "\n")
+		            .replaceAll("<[^>]*>", "")
+		            .replace("&nbsp;", " ")
+		            .replace("&amp;", "&")
+		            .replace("&lt;", "<")
+		            .replace("&gt;", ">")
+		            .replace("&quot;", "\"")
+		            .replace("&#39;", "'")
+		            .replace("&apos;", "'");
+		
+		    return plainText.lines()
+		            .map(String::trim)
+		            .filter(line -> !line.isEmpty())
+		            .findFirst()
+		            .orElse("A new message has been received.");
+		}
+		
+
 
 }
