@@ -94,8 +94,8 @@ public class UploadController {
             throw new RuntimeException("Only video files are allowed");
         }
 
-        if (file.getSize() > 50 * 1024 * 1024) {
-            throw new RuntimeException("Video size must be under 50MB");
+        if (file.getSize() > 100 * 1024 * 1024) {
+            throw new RuntimeException("Video size must be under 100MB");
         }
 
         if (removeAudio) {

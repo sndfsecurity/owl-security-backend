@@ -25,7 +25,6 @@ import com.owlsecurity.portal.entity.Report;
 import com.owlsecurity.portal.entity.Client;
 import com.owlsecurity.portal.repository.ClientRepository;
 
-
 @Service
 public class WebPushNotificationService {
 
@@ -72,9 +71,7 @@ public class WebPushNotificationService {
         }
     }
 
-    
-    
-    
+       
     public int sendReportNotification(Report report)
             throws Exception {
 
@@ -208,7 +205,6 @@ public class WebPushNotificationService {
         return sentCount;
     }
     
-
 
 		public int sendClientMessageNotification(Report report)
 		        throws Exception {
@@ -425,6 +421,4 @@ public class WebPushNotificationService {
 		            .orElse("A new message has been received.");
 		}
 		
-
-
 }

@@ -2,6 +2,7 @@
 package com.owlsecurity.portal.entity;
 
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 

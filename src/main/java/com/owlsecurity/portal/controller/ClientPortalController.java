@@ -21,7 +21,7 @@ public class ClientPortalController {
     private final UserRepository userRepository;
     private final ClientRepository clientRepository;
     private final ReportRepository reportRepository;
-    
+        
     public ClientPortalController(
             UserRepository userRepository,
             ClientRepository clientRepository,
@@ -30,6 +30,7 @@ public class ClientPortalController {
         this.userRepository = userRepository;
         this.clientRepository = clientRepository;
         this.reportRepository = reportRepository;
+        
     }
 
     @GetMapping("/dashboard")
@@ -74,6 +75,9 @@ public class ClientPortalController {
 
         return reportRepository.findByClientId(
                 client.getId()
+                
         );
+        
+            
     }
 }
