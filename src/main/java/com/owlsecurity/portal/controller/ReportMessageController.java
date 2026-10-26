@@ -1,4 +1,3 @@
-
 package com.owlsecurity.portal.controller;
 
 import com.owlsecurity.portal.entity.ReportMessage;

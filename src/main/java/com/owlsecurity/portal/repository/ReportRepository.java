@@ -113,5 +113,9 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
 	            LocalDateTime end,
 	            Pageable pageable
 	    );
+	    
+	    long countByReportLifecycle(String reportLifecycle);
+	    
+	    
 
 }

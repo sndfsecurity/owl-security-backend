@@ -31,8 +31,8 @@ public class DashboardController {
 
         long totalClients = clientRepository.count();
 
-        long totalReports = reportRepository.count();
-
+        long totalReports =
+        	    reportRepository.countByReportLifecycle("SUBMITTED");
        
         String today =
                 LocalDate.now()
