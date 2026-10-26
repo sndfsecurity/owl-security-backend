@@ -21,9 +21,8 @@ public class Report {
 
     private String priority;
    
-    
-   
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.LAZY)
+    @org.hibernate.annotations.BatchSize(size = 20)
     @CollectionTable(
         name = "report_images",
         joinColumns = @JoinColumn(name = "report_id")
@@ -31,7 +30,9 @@ public class Report {
     @Column(name = "image_url")
     private List<String> imageUrls;
     
-    @ElementCollection
+    
+    @ElementCollection(fetch = FetchType.LAZY)
+    @org.hibernate.annotations.BatchSize(size = 20)
     @CollectionTable(
         name = "report_videos",
         joinColumns = @JoinColumn(name = "report_id")
