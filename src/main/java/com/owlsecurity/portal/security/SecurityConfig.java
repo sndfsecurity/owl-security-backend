@@ -37,12 +37,21 @@ public class SecurityConfig {
 
         CorsConfiguration configuration = new CorsConfiguration();
 
+//        configuration.setAllowedOriginPatterns(
+//                List.of(
+//                        "http://localhost:3000",
+//                        "https://owl-security-frontend.vercel.app"
+//                )
+//        );
+        
         configuration.setAllowedOriginPatterns(
-                List.of(
-                        "http://localhost:3000",
-                        "https://owl-security-frontend.vercel.app"
-                )
-        );
+        	    List.of(
+        	        "http://localhost:3000",
+        	        "https://owl-security-frontend.vercel.app",
+        	        "https://owl-security-frontend-git-staging-sndfsecuritys-projects.vercel.app",
+        	        "https://owl-security-frontend-hpx7ejcfs-sndfsecuritys-projects.vercel.app"
+        	    )
+        	);
 
         configuration.setAllowedMethods(
                 List.of(
